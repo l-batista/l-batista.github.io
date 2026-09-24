@@ -1,3 +1,40 @@
+# Site basics
 title: Luis Batista
+author:
+  name: Luis Batista
 description: People Analytics leader building AI, knowledge graph, and agent solutions
-theme: jekyll-theme-minimal
+
+# Theme
+remote_theme: daattali/beautiful-jekyll@6.0.1
+plugins:
+  - jekyll-remote-theme
+
+# Top navigation bar
+navbar-links:
+  Home: ""
+  Projects:
+    - PR Real Estate Agent: "pr-real-estate-agent"
+  LinkedIn: "https://www.linkedin.com/in/[your-profile]"
+
+# Social icons in the footer
+social-network-links:
+  linkedin: https://www.linkedin.com/in/luisgbatista/
+  github: l-batista
+
+# Colors (dark navy and teal for a tech/analytics feel)
+page-col: "#FFFFFF"
+text-col: "#1F2933"
+link-col: "#0B8A8F"
+hover-col: "#14B8A6"
+navbar-col: "#0F172A"
+navbar-text-col: "#E2E8F0"
+navbar-border-col: "#14B8A6"
+footer-col: "#0F172A"
+footer-text-col: "#CBD5E1"
+footer-link-col: "#14B8A6"
+
+# Required technical settings
+markdown: kramdown
+highlighter: rouge
+permalink: /:year-:month-:day-:title/
+paginate: 5

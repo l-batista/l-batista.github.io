@@ -47,7 +47,7 @@ regions and what drives short-term rental demand, so its SQL queries and answers
 are more precise.
 
 ## Example
-**Question:** "What are all the condos in San Juan that cost less than $500,000?"
+**Question:** "What are all the condos in San Juan that cost less than $500,000?"\
 **Answer:** The agent returned 11 condos matching the criteria.
 
 ## Results

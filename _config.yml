@@ -14,7 +14,7 @@ navbar-links:
   Home: ""
   Projects:
     - PR Real Estate Agent: "pr-real-estate-agent"
-  LinkedIn: "https://www.linkedin.com/in/[your-profile]"
+  LinkedIn: https://l-batista.github.io/
 
 # Social icons in the footer
 social-network-links:

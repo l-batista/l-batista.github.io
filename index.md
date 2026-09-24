@@ -29,5 +29,5 @@ workforce and business data into decisions. My current focus is knowledge manage
 
 ## Contact
 
-- [LinkedIn]((https://www.linkedin.com/in/luisgbatista/)
+- [LinkedIn](https://www.linkedin.com/in/luisgbatista/)
 - [GitHub](https://github.com/l-batista)

@@ -1,6 +1,6 @@
 ---
-layout: default
-title: Puerto Rico Real Estate Intelligence Agent
+layout: page
+subtitle: SQL + RAG agent built in Langflow
 ---
 
 # Puerto Rico Real Estate Intelligence Agent

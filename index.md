@@ -24,11 +24,11 @@ workforce and business data into decisions. My current focus is knowledge manage
 **Outcome:** Precise, plain-English property searches in under a minute.\
 [Read the case study](/pr-real-estate-agent)
 
-### [Knowledge Graph with Neo4j]
-**Problem:** [What business problem does it solve?]
-**Approach:** [Tools used, e.g. Neo4j, Cypher, Python]
-**Outcome:** [What it enables or shows]
-[View code](https://github.com/l-batista/[repo-name]) · [Demo video]([link])
+### Commercial Sales Graph Database [Neo4j]
+**Problem:** CRM data can't show how physicians influence each other's prescribing through referral networks.\
+**Approach:** Neo4j AuraDB, Cypher traversal queries, and betweenness centrality from the Graph Data Science library.\
+**Outcome:** Identified accounts whose prescribing is driven by peer influence, plus the most central "hub" accounts in the referral network.\
+[Read the case study](/commercial-graph-case-study)
 
 
 

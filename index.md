@@ -7,14 +7,14 @@ cover-img: "/cover.gif"
 
 # Hi, I'm Luis Batista
 
-I've worked in People Analytics across many organizaing, including at Johnson & Johnson. I build AI solutions that turn
+I've worked in People Analytics across many organizations, including at Johnson & Johnson. I build AI solutions that turn
 workforce and business data into decisions. My current focus is knowledge management, graph databases, GraphRAG, and AI agents.
 
 ## What I Bring
 
 - **People Analytics leadership:** 12 years across J&J, Mastercard, L3Harris, and New York Life
 - **Technical builder:** Tableau, PowerBI, Power Automate, SQL, Neo4j/Cypher, Langflow agents 
-- **Business translator:** MBA in Analytics, turning complex data into executive-ready insight
+- **Business translator:** MBA in Analytics, turning complex data into executive-ready insight. Delivering insights that drive decisions to senior stakeholders
 
 ## Projects
 
@@ -25,7 +25,7 @@ workforce and business data into decisions. My current focus is knowledge manage
 [View code](https://github.com/l-batista/[repo-name]) · [Demo video]([link])
 
 ### Puerto Rico Real Estate Intelligence Agent [Langflow]
-**Problem:** Finding investment properties across 86 municipalities with rigid website filters took over an hour per search.\
+**Problem:** Finding investment properties across 78 municipalities with rigid website filters took over an hour per search.\
 **Approach:** Python data pipeline, SQLite, and a Langflow agent using SQL and RAG tools.\
 **Outcome:** Precise, plain-English property searches in under a minute.\
 [Read the case study](/pr-real-estate-agent)

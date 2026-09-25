@@ -2,7 +2,7 @@
 layout: page
 title: Luis Batista
 subtitle: People Analytics | AI Agents | Knowledge Graphs
-cover-img: "/assets/img/cover.jpg"
+cover-img: "/cover.gif"
 ---
 
 # Hi, I'm Luis Batista

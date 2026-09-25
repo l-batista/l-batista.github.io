@@ -38,3 +38,7 @@ markdown: kramdown
 highlighter: rouge
 permalink: /:year-:month-:day-:title/
 paginate: 5
+
+# CSS
+site-css:
+  - "/assets/css/custom.css"

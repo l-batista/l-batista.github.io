@@ -2,10 +2,12 @@
   font-size: 42px;
 }
 
-.navbar-custom .dropdown-menu {
-  min-width: max-content;
+.navbar-custom .navbar-nav .dropdown-menu {
+  min-width: max-content !important;
 }
 
-.navbar-custom .dropdown-menu .dropdown-item {
-  white-space: nowrap;
+.navbar-custom .navbar-nav .dropdown-menu .dropdown-item {
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
 }

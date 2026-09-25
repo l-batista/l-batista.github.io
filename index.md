@@ -33,5 +33,5 @@ workforce and business data into decisions. My current focus is knowledge manage
 ## Contact
 
 - [LinkedIn](https://www.linkedin.com/in/luisgbatista/)
-- [Tableau Public] (https://public.tableau.com/app/profile/luisbatista)
+- [Tableau] (https://public.tableau.com/app/profile/luisbatista)
 - [GitHub](https://github.com/l-batista)

@@ -50,6 +50,9 @@ are more precise.
 ## Example
 **Question:** "What are all the condos in San Juan that cost less than $500,000?"\
 **Answer:** The agent returned 11 condos matching the criteria.
+<video controls width="100%">
+  <source src="/PRagentdemo.mp4" type="video/mp4">
+</video>
 
 ## Results
 - **Turned an unusable search into a useful tool:** the original site's limited,
@@ -68,5 +71,3 @@ combined with the other tools the agent can use.
 
 ## Tech Stack
 Python · SQLite · FAISS · RAG · Langflow · LLM agents
-
-[Demo video]([link])

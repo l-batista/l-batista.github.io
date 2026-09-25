@@ -1,6 +1,7 @@
 ---
 layout: page
-subtitle: SQL + RAG agent built in Langflow
+title: PR Real Estate Intelligence Agent
+subtitle: An AI agent combining SQL queries and RAG retrieval to surface property investment opportunities
 ---
 
 # Puerto Rico Real Estate Intelligence Agent

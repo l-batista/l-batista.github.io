@@ -13,6 +13,7 @@ navbar-links:
   Home: ""
   Projects:
     - PR Real Estate Agent: "pr-real-estate-agent"
+    - Commercial Sales Graph: "commercial-graph-case-study"
   LinkedIn: https://www.linkedin.com/in/luisgbatista/
   Tableau Public: https://public.tableau.com/app/profile/luisbatista
 

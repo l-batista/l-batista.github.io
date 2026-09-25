@@ -4,9 +4,6 @@ title: Commercial Sales Graph Database
 subtitle: A Neo4j graph database modeling pharma sales reps, accounts, and referral networks to surface influence patterns invisible to flat CRM data
 ---
 
-# Commercial Sales Graph Database
-*A Neo4j graph database modeling pharma sales reps, accounts, and referral networks to surface influence patterns invisible to flat CRM data*
-
 [← Back to home](/)
 
 ## The Problem

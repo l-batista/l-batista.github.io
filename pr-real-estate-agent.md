@@ -12,7 +12,7 @@ subtitle: An AI agent combining SQL queries and RAG retrieval to surface propert
 ## The Problem
 Puerto Rico's largest classifieds site lists thousands of properties, but finding
 investment opportunities (short-term rental potential, beach access, amenities)
-means manually scrolling listings across 86 municipalities using a handful of rigid
+means manually scrolling listings across 78 municipalities using a handful of rigid
 filters. There is no way to ask questions like "Which listings under $300K near the
 beach have STR potential?"
 
@@ -24,7 +24,7 @@ plain-English questions using that data plus domain knowledge.
 ## How It Works
 
 **1. Data pipeline (Python)**
-- Scrapes listings municipality by municipality across all 86 locations
+- Scrapes listings municipality by municipality across all 78 locations
 - Three auto-detecting run modes (initial, weekly, daily), so no manual setup per run
 - Deduplicates on each listing's source ID and handles pagination and Spanish-language
   character encoding

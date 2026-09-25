@@ -1,7 +1,6 @@
 # Site basics
-title: "Luis Batista's Portfolio"
-author:
-  name: Luis Batista
+title: "Portfolio"
+author: Luis Batista
 description: People Analytics leader building AI, knowledge graph, and agent solutions
 
 # Theme
@@ -14,7 +13,7 @@ navbar-links:
   Home: ""
   Projects:
     - PR Real Estate Agent: "pr-real-estate-agent"
-  LinkedIn: https://l-batista.github.io/
+  LinkedIn: https://www.linkedin.com/in/luisgbatista/
 
 # Social icons in the footer
 social-network-links:

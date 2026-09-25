@@ -30,7 +30,7 @@ plain-English questions using that data plus domain knowledge.
   character encoding
 
 **2. Enrichment**
-- Adds GPS coordinates, agent details, and full descriptions
+- Adds GPS coordinates and agent details
 - Flags investment signals via keywords: beach access, STR potential, pool
 
 **3. Storage (SQLite)**
@@ -48,7 +48,7 @@ regions and what drives short-term rental demand, so its SQL queries and answers
 are more precise.
 
 ## Example
-**Question:** "What are all apartment types that have a beach view? Summarize results by municipality and include average prices. 
+**Prompt:** "What are all apartment types that have a beach view? Summarize results by municipality and include average prices. 
 Exclude any apartments that do not have a room count."\
 **Answer:** "56 apartments across 28 municipalities"
 <video controls width="100%">

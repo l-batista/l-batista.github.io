@@ -1,5 +1,8 @@
 ---
-layout: default
+layout: page
+title: Luis Batista
+subtitle: People Analytics | AI Agents | Knowledge Graphs
+cover-img: "/assets/img/cover.jpg"
 ---
 
 # Hi, I'm Luis Batista

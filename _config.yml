@@ -10,7 +10,7 @@ plugins:
 
 # Top navigation bar
 navbar-links:
-  Home: ""
+  Home: "/"
   Projects:
     - PR Real Estate Agent: "pr-real-estate-agent"
     - Commercial Sales Graph: "commercial-graph-case-study"
@@ -20,6 +20,7 @@ navbar-links:
 # Social icons in the footer
 social-network-links:
   linkedin: https://www.linkedin.com/in/luisgbatista/
+  tableau: https://public.tableau.com/app/profile/luisbatista
   github: l-batista
 
 # Colors (dark navy and teal for a tech/analytics feel)

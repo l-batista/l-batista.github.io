@@ -32,9 +32,9 @@ workforce and business data into decisions. My current focus is knowledge manage
 
 ### FDA Compliance Data Pipeline [Alteryx · Tableau]
 
-**Problem:** FDA's inspection, Form 483, enforcement and recall data come as four separate exports with mismatched fields and no shared event key.
-**Approach:** Built an Alteryx workflow that cleans about 645K records, reconciles them to FDA's published counts and models them as four fact tables sharing a facility dimension.
-**Outcome:** Validated, Tableau-ready data for drug and device compliance analysis, with misleading recall text corrected in about 3,000 records.
+**Problem:** FDA's inspection, Form 483, enforcement and recall data come as four separate exports with mismatched fields and no shared event key.\
+**Approach:** Built an Alteryx workflow that cleans about 645K records, reconciles them to FDA's published counts and models them as four fact tables sharing a facility dimension.\
+**Outcome:** Validated, Tableau-ready data for drug and device compliance analysis, with misleading recall text corrected in about 3,000 records.\
 
 [Read the case study](/fda-compliance-pipeline)
 

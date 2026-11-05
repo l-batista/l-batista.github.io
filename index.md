@@ -38,6 +38,19 @@ workforce and business data into decisions. My current focus is knowledge manage
 
 [Read the case study](/fda-compliance-pipeline)
 
+
+## Tools Built with AI
+
+### Calibration Board
+
+**Problem:** Calibration meetings run on shared spreadsheets, so HRBPs recount distributions by hand, lose track of which ratings changed, and risk showing peers each other's ratings.
+
+**Approach:** Designed with Claude from my HRBP experience. A browser-based board builds columns from any rating scale, hides people likely in the room using the reporting tree, and tracks original and new ratings separately.
+
+**Outcome:** A working tool that turns live rating changes into a one-click, upload-ready CSV of only the people who changed, with nothing leaving the HRBP's laptop.
+
+[Read about the tool](/calibration-board)
+
 ## Coming Soon
 
 These projects are being prepared for publication. Case studies will be posted here.

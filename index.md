@@ -16,54 +16,12 @@ workforce and business data into decisions. My current focus is knowledge manage
 - **Technical builder:** Tableau, PowerBI, Power Automate, SQL, Neo4j/Cypher, Langflow agents 
 - **Business translator:** MBA in Analytics, turning complex data into executive-ready insight. Delivering insights that drive decisions to senior stakeholders
 
-## Projects
+## Featured Projects
 
-### Puerto Rico Real Estate Intelligence Agent [Langflow]
-**Problem:** Finding investment properties across 78 municipalities with rigid website filters took over an hour per search.\
-**Approach:** Python data pipeline, SQLite, and a Langflow agent using SQL and RAG tools.\
-**Outcome:** Precise, plain-English property searches in under a minute.\
-[Read the case study](/pr-real-estate-agent)
+{% assign featured = site.data.projects | where: "featured", true %}
+{% include project-cards.html projects=featured %}
 
-### Commercial Sales Graph Database [Neo4j]
-**Problem:** CRM data can't show how physicians influence each other's prescribing through referral networks.\
-**Approach:** Neo4j AuraDB, Cypher traversal queries, and betweenness centrality from the Graph Data Science library.\
-**Outcome:** Identified accounts whose prescribing is driven by peer influence, plus the most central "hub" accounts in the referral network.\
-[Read the case study](/commercial-graph-case-study)
-
-### FDA Compliance Data Pipeline [Alteryx · Tableau]
-
-**Problem:** FDA's inspection, Form 483, enforcement and recall data come as four separate exports with mismatched fields and no shared event key.\
-**Approach:** Built an Alteryx workflow that cleans about 645K records, reconciles them to FDA's published counts and models them as four fact tables sharing a facility dimension.\
-**Outcome:** Validated, Tableau-ready data for drug and device compliance analysis, with misleading recall text corrected in about 3,000 records.
-
-[Read the case study](/fda-compliance-pipeline)
-
-
-## Tools Built with AI
-
-### Calibration Board
-
-**Problem:** Calibration meetings run on shared spreadsheets, so HRBPs recount distributions by hand, lose track of which ratings changed, and risk showing peers each other's ratings.
-
-**Approach:** Designed with Claude from my HRBP experience. A browser-based board builds columns from any rating scale, hides people likely in the room using the reporting tree, and tracks original and new ratings separately.
-
-**Outcome:** A working tool that turns live rating changes into a one-click, upload-ready CSV of only the people who changed, with nothing leaving the HRBP's laptop.
-
-[Read about the tool](/calibration-board)
-
-## Coming Soon
-
-These projects are being prepared for publication. Case studies will be posted here.
-
-### Automated Leadership Reporting Pipeline [Visier · Power Query · Copilot]
-**Problem:** A recurring senior leadership review required manually refreshing PowerPoint slides with the latest workforce measures each cycle.\
-**Approach:** Built a pipeline that pulls measures from Visier via API and transforms them in Excel/Power Query into a curated data source. That source feeds a slide tool I created, which populates a designated PowerPoint template with fresh data. A second data source powers Microsoft Copilot agents that answer questions about the numbers in the slides.\
-**Outcome:** A repeatable reporting cycle with refreshed slides and an AI agent that lets leaders explore the numbers behind them.
-
-### Scaled Slide Automation for Commercial Sales Rep Reviews
-**Problem:** Creating recurring overview slides for 100 commercial sales reps meant building 200 slides by hand each cycle.\
-**Approach:** Adapted the slide tool from the leadership reporting pipeline to generate rep-level overview slides automatically.\
-**Outcome:** Saves an estimated 1,000+ hours per year, equivalent to roughly 0.5 FTE.
+[View all projects →](/projects)
 
 ## Contact
 

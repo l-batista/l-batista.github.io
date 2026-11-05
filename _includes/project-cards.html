@@ -1,0 +1,14 @@
+<div class="project-grid">
+{% for p in include.projects %}
+{% if p.status == "coming" %}
+<div class="project-card coming">
+{% else %}
+<a class="project-card" href="{{ p.url }}">
+{% endif %}
+<span class="card-tags">{{ p.tags }}</span>
+<h3>{{ p.title }}</h3>
+<p>{{ p.summary }}</p>
+<span class="card-link">{% if p.status == "coming" %}Coming soon{% else %}Read case study →{% endif %}</span>
+{% if p.status == "coming" %}</div>{% else %}</a>{% endif %}
+{% endfor %}
+</div>

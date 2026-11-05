@@ -12,6 +12,7 @@ plugins:
 navbar-links:
   Home: "/"
   Projects:
+    - All Projects: "/projects"
     - PR Real Estate Agent: "pr-real-estate-agent"
     - Commercial Sales Graph: "commercial-graph-case-study"
     - FDA Compliance Pipeline: "fda-compliance-pipeline"

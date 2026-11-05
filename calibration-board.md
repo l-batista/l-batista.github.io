@@ -101,18 +101,6 @@ I built this in one morning working with Claude, and I wrote very little code by
 
 You don't need to be a developer to do this. You do need to know the work well enough to say what good looks like, and to keep saying no to features that don't serve the moment you started with.
 
-## Limits and what comes next
-
-This is version one, and it has known limits:
-
-- It hasn't been tested yet with working HRBPs or real calibration files.
-- The exclusion check is only as good as the Manager ID data. Without that column, it falls back to a warning.
-- Sessions are saved in one browser on one machine. Moving a session to another laptop means exporting the full file and loading it again.
-- Drag and drop is built for a laptop. On a tablet, the search and side panel are the way to move people.
-- Exports are generic CSV. They aren't yet mapped to a specific HRIS upload template such as a Workday EIB.
-
-Next up is practitioner testing, then template-matched exports. A merit and bonus impact view is a natural later module, kept separate so the calibration step stays focused.
-
-## Try it
+## Try it for yourself
 
 [Open Calibration Board](/assets/css/calibration-board.html) in your browser, or <a href="/assets/css/calibration-board.html" download>download the file</a> to run it from your desktop. It opens with sample data so you can try every feature before loading your own file. All names in the sample and screenshots are fictional.

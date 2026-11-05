@@ -1,3 +1,5 @@
+<div class="card-section{% if include.carousel %} is-carousel{% endif %}">
+{% if include.carousel %}<button class="carousel-btn prev" aria-label="Previous">‹</button>{% endif %}
 <div class="project-grid">
 {% for p in include.projects %}
 {% if p.status == "coming" %}
@@ -8,7 +10,9 @@
 <span class="card-tags">{{ p.tags }}</span>
 <h3>{{ p.title }}</h3>
 <p>{{ p.summary }}</p>
-<span class="card-link">{% if p.status == "coming" %}Coming soon{% else %}Read case study →{% endif %}</span>
+<span class="card-link">{% if p.status == "coming" %}Coming soon{% else %}{{ include.link_text | default: "Read case study" }} →{% endif %}</span>
 {% if p.status == "coming" %}</div>{% else %}</a>{% endif %}
 {% endfor %}
+</div>
+{% if include.carousel %}<button class="carousel-btn next" aria-label="Next">›</button>{% endif %}
 </div>

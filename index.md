@@ -19,10 +19,21 @@ workforce and business data into decisions. My current focus is knowledge manage
 ## Featured Projects
 
 {% assign featured = site.data.projects | where: "featured", true %}
-{% include project-cards.html projects=featured %}
+{% include project-cards.html projects=featured carousel=true %}
 
 [View all projects →](/projects)
 
+## Featured Tools
+
+{% include project-cards.html projects=site.data.tools link_text="Explore the tool" %}
+
+<script>
+document.querySelectorAll('.is-carousel').forEach(function (c) {
+  var track = c.querySelector('.project-grid');
+  c.querySelector('.prev').onclick = function () { track.scrollBy({ left: -track.clientWidth * 0.9, behavior: 'smooth' }); };
+  c.querySelector('.next').onclick = function () { track.scrollBy({ left: track.clientWidth * 0.9, behavior: 'smooth' }); };
+});
+</script>
 ## Contact
 
 - [LinkedIn](https://www.linkedin.com/in/luisgbatista/)

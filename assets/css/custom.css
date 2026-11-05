@@ -64,3 +64,46 @@ a.project-card:hover {
   border-top-color: #CBD5E1;
   opacity: 0.75;
 }
+
+.is-carousel {
+  position: relative;
+}
+
+.is-carousel .project-grid {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(260px, 31%);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 8px 4px 16px;
+  scrollbar-width: thin;
+}
+
+.is-carousel .project-card {
+  scroll-snap-align: start;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: #0F172A;
+  color: #14B8A6;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+}
+
+.carousel-btn.prev { left: -18px; }
+.carousel-btn.next { right: -18px; }
+
+@media (max-width: 600px) {
+  .carousel-btn { display: none; }
+  .is-carousel .project-grid { grid-auto-columns: 85%; }
+}

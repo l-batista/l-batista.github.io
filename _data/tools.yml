@@ -2,6 +2,7 @@
   tags: HTML · JavaScript
   summary: Lets HRBPs adjust performance ratings live with leaders, see the distribution update, and export changes for HRIS upload.
   url: /calibration-board
+  featured: true
 
 - title: BOM Exploder & Inventory Gap Analyzer
   tags: Python · Pyodide

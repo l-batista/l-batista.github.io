@@ -34,6 +34,7 @@ document.querySelectorAll('.is-carousel').forEach(function (c) {
   c.querySelector('.next').onclick = function () { track.scrollBy({ left: track.clientWidth * 0.9, behavior: 'smooth' }); };
 });
 </script>
+
 ## Contact
 
 - [LinkedIn](https://www.linkedin.com/in/luisgbatista/)

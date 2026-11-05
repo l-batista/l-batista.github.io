@@ -11,3 +11,56 @@
   word-break: normal !important;
   overflow-wrap: normal !important;
 }
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin: 20px 0 30px;
+}
+
+.project-card {
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+  border: 1px solid #E2E8F0;
+  border-top: 4px solid #14B8A6;
+  border-radius: 10px;
+  background: #FFFFFF;
+  color: #1F2933 !important;
+  text-decoration: none !important;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+a.project-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.project-card h3 {
+  font-size: 20px;
+  margin: 8px 0;
+}
+
+.project-card p {
+  font-size: 15px;
+  flex-grow: 1;
+}
+
+.card-tags {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #0B8A8F;
+}
+
+.card-link {
+  font-weight: 700;
+  color: #0B8A8F;
+}
+
+.project-card.coming {
+  border-top-color: #CBD5E1;
+  opacity: 0.75;
+}

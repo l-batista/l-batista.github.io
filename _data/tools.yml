@@ -1,17 +1,21 @@
+- title: Contingent Workforce Supplier Review
+  tags: JavaScript · SheetJS
+  summary: Reconciles contractor rosters, spend, rate cards and POs, then reports monthly governance measures, PO burn and how suppliers compare.
+  url: /contingent-workforce-supplier-review
+  featured: true
+  
+- title: BOM Exploder & Inventory Gap Analyzer
+  tags: Python · Pyodide
+  summary: Plans 4 weeks of demand against stock and open POs across multi-level BOMs, flagging the week each material runs short and the cost to close the gap.
+  url: /bom-gap-analyzer
+  featured: true
+  
 - title: Performance Calibration Board
   tags: HTML · JavaScript
   summary: Lets HRBPs adjust performance ratings live with leaders, see the distribution update, and export changes for HRIS upload.
   url: /calibration-board
   featured: true
 
-- title: BOM Exploder & Inventory Gap Analyzer
-  tags: Python · Pyodide
-  summary: Plans 4 weeks of demand against stock and open POs across multi-level BOMs, flagging the week each material runs short and the cost to close the gap.
-  url: /bom-gap-analyzer
-  featured: true
 
-- title: Contingent Workforce Supplier Review
-  tags: JavaScript · SheetJS
-  summary: Reconciles contractor rosters, spend, rate cards and POs, then reports monthly governance measures, PO burn and how suppliers compare.
-  url: /contingent-workforce-supplier-review
-  featured: true
+
+

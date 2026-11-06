@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: page 
 title: BOM Gap Analyzer
 subtitle: A 4-week material planning tool built with AI
 ---

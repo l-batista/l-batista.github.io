@@ -18,6 +18,7 @@ navbar-links:
     - FDA Compliance Pipeline: "fda-compliance-pipeline"
   Tools:
     - Calibration Board: "calibration-board"
+    - BOM Gap Analyzer: "bom-gap-analyzer"
   LinkedIn: https://www.linkedin.com/in/luisgbatista/
   Tableau Public: https://public.tableau.com/app/profile/luisbatista
 

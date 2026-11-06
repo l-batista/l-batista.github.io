@@ -1,0 +1,2552 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BOM Gap Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js" integrity="sha384-pPi0zxBAoDu6+JXW/C68UZLvBUUtU+7zonhif43rqj7pxsGyqyqzcian2Rj37Rss" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js" integrity="sha384-IWROdLKRsN1UuJywMlWl7/blXQ8GEooN2n7dzTxfEPd7ybYIKCUJ2Ol/1Gpf3YV4" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" integrity="sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+<style>
+:root{
+  --bg:#F4F6F9; --panel:#FFFFFF; --ink:#14213D; --ink2:#4A5568; --ink3:#8792A2; --line:#E3E8EF;
+  --accent:#2457D6; --accent-soft:#E8EEFC; --nav:#0F1B33; --nav-ink:#C9D3E6;
+  --red:#D64545; --red-soft:#FCEBEB; --amber:#D99A00; --amber-soft:#FFF5DB; --green:#2E9E6B; --green-soft:#E5F5EE;
+  --grey-soft:#EEF1F5; --radius:10px; --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--accent)}
+.app{display:grid;grid-template-columns:220px 1fr;grid-template-rows:56px 1fr;height:100vh}
+header.top{grid-column:1/3;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--line);z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em;min-width:196px}
+.brand .mark{width:28px;height:28px;border-radius:7px;background:var(--accent);display:grid;place-items:center}
+.projname{border:1px solid transparent;border-radius:6px;padding:5px 8px;font-weight:600;min-width:160px;background:transparent}
+.projname:hover,.projname:focus{border-color:var(--line);outline:none;background:#fff}
+.spacer{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px;border-radius:999px;background:var(--grey-soft);color:var(--ink2);white-space:nowrap}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--ink3)}
+.pill.ok .dot{background:var(--green)} .pill.warn .dot{background:var(--amber)} .pill.bad .dot{background:var(--red)}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:#C8D1DD;background:#FAFBFC}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#1D49B8}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.small{padding:3px 9px;font-size:12.5px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+select.sel,input.inp{border:1px solid var(--line);border-radius:8px;padding:6px 9px;background:#fff}
+input.inp.num{width:110px;text-align:right}
+nav.side{background:var(--nav);color:var(--nav-ink);padding:14px 10px;display:flex;flex-direction:column;gap:2px;overflow:auto}
+nav.side .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#6E7D99;padding:10px 10px 4px}
+nav.side button{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-weight:500}
+nav.side button:hover{background:#1A2A4A;color:#fff}
+nav.side button.on{background:#22355C;color:#fff}
+nav.side .badge{margin-left:auto;font-size:11px;background:#33476E;border-radius:999px;padding:1px 7px;color:#fff}
+nav.side .badge.red{background:var(--red)}
+nav.side .foot{margin-top:auto;font-size:11.5px;color:#6E7D99;padding:10px;line-height:1.5}
+main{overflow:auto;padding:22px 26px 60px}
+.page-head{display:flex;align-items:flex-end;gap:16px;margin-bottom:16px}
+.page-head h1{font-size:22px;margin:0;letter-spacing:-.015em}
+.page-head .sub{color:var(--ink2);margin-top:3px}
+.kicker{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+@media (max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.card h3{margin:0 0 10px;font-size:15px}
+.card .hint{color:var(--ink3);font-size:12.5px}
+.kpi .v{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-top:2px}
+.kpi .l{font-size:12px;color:var(--ink2);font-weight:500}
+.kpi .n{font-size:12px;color:var(--ink3);margin-top:2px}
+.answer{display:flex;gap:14px;align-items:center;border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;border:1px solid}
+.answer .big{font-size:19px;font-weight:700;letter-spacing:-.01em}
+.answer .ico{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;font-weight:800;color:#fff;font-size:18px}
+.answer.yes{background:var(--green-soft);border-color:#BFE6D3}.answer.yes .ico{background:var(--green)}
+.answer.no{background:var(--red-soft);border-color:#F3C6C6}.answer.no .ico{background:var(--red)}
+.answer.partial{background:var(--amber-soft);border-color:#F2DE9E}.answer.partial .ico{background:var(--amber)}
+.answer.info{background:var(--accent-soft);border-color:#CCD9F7}.answer.info .ico{background:var(--accent)}
+.ready{border:1px dashed #E5C55F;background:#FFFBEE;border-radius:var(--radius);padding:12px 14px;margin-bottom:14px}
+.ready.blocked{border-color:#EBA3A3;background:#FFF6F6}
+.ready b{display:block;margin-bottom:6px}
+.ready ul{margin:0;padding-left:18px}.ready li{margin:3px 0}
+.ready .parts{color:var(--ink2);font-size:12.5px}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{text-align:left;font-weight:600;color:var(--ink2);font-size:12px;padding:8px 10px;border-bottom:1px solid var(--line);background:#FAFBFC;cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:0}
+table.t th.num,table.t td.num{text-align:right}
+table.t td{padding:7px 10px;border-bottom:1px solid #EEF1F5;vertical-align:top}
+table.t tr.click{cursor:pointer}
+table.t tr.click:hover td{background:#F7F9FC}
+.tablewrap{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.tbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.tbar h3{margin:0;margin-right:auto}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.st::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.st.red{background:var(--red-soft);color:var(--red)}.st.amber{background:var(--amber-soft);color:#A87700}.st.green{background:var(--green-soft);color:var(--green)}
+.st.unknown,.st.none{background:var(--grey-soft);color:var(--ink3)}
+.st.High{background:var(--red-soft);color:var(--red)}.st.Medium{background:var(--amber-soft);color:#A87700}.st.Low{background:var(--green-soft);color:var(--green)}
+.chart{width:100%;height:340px}
+.muted{color:var(--ink3)}.small{font-size:12.5px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.drop{border:2px dashed #C9D3E3;border-radius:var(--radius);padding:26px;text-align:center;background:#FAFBFD;transition:.15s}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.issue{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #EEF1F5;align-items:flex-start}
+.issue:last-child{border-bottom:0}
+.sev{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:5px;flex:none;margin-top:1px}
+.sev.error{background:var(--red-soft);color:var(--red)}.sev.warning{background:var(--amber-soft);color:#A87700}.sev.info{background:var(--grey-soft);color:var(--ink2)}
+.issue .msg{flex:1}
+.issue .act{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.tabcard{border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;background:#fff;margin-bottom:10px}
+.tabcard .hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tabcard .hd .nm{font-weight:600}
+.maprow{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-top:10px}
+.maprow label{font-size:11.5px;color:var(--ink2);display:flex;flex-direction:column;gap:3px}
+.maprow label.req span::after{content:" *";color:var(--red)}
+.overlay{position:fixed;inset:0;background:rgba(15,27,51,.45);display:grid;place-items:center;z-index:50}
+.modal{background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);width:min(1040px,94vw);max-height:92vh;display:flex;flex-direction:column}
+.modal .mh{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);gap:10px}
+.modal .mh h2{margin:0;font-size:16px;margin-right:auto}
+.modal .mb{padding:16px 18px;overflow:auto}
+.modal .mf{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--line)}
+.drawer{position:fixed;top:56px;right:0;bottom:0;width:min(520px,96vw);background:#fff;border-left:1px solid var(--line);box-shadow:-10px 0 30px rgba(16,24,40,.08);z-index:40;display:flex;flex-direction:column}
+.drawer .mh{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.drawer .mh h2{margin:0;font-size:15px;margin-right:auto}
+.drawer .mb{padding:14px 16px;overflow:auto}
+.path{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.path .eq{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.6}
+.path .src{font-size:11.5px;color:var(--ink3);margin-top:4px}
+.splash{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:100}
+.splash .box{width:420px;text-align:center}
+.bar{height:6px;border-radius:9px;background:#E1E7F0;overflow:hidden;margin:18px 0 10px}
+.bar>div{height:100%;background:var(--accent);width:5%;transition:width .4s}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--nav);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{border:0;background:transparent;padding:6px 12px;cursor:pointer;font-weight:500;color:var(--ink2)}
+.seg button.on{background:var(--accent-soft);color:var(--accent)}
+.colmenu{position:relative}
+.colmenu .pop{position:absolute;right:0;top:110%;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(16,24,40,.12);padding:8px;z-index:30;min-width:190px}
+.colmenu .pop label{display:flex;gap:8px;align-items:center;padding:4px 6px;font-size:13px;cursor:pointer}
+.sc-card{border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;background:#fff;display:flex;flex-direction:column;gap:6px}
+.sc-card.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.tag{font-size:11px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--grey-soft);color:var(--ink2)}
+.tag.blue{background:var(--accent-soft);color:var(--accent)}
+#explorer-canvas{width:100%;height:580px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.empty{padding:48px;text-align:center;color:var(--ink2)}
+.empty h2{color:var(--ink);margin:6px 0}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+/* Present card: fixed 16:9 canvas for export */
+.pcard{width:1280px;height:720px;background:#fff;color:#14213D;font-family:Inter,system-ui,sans-serif;position:relative;display:flex;flex-direction:column;padding:44px 56px 0}
+.pcard .pk{font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#2457D6}
+.pcard .ph{font-size:36px;font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-top:10px;max-width:1100px}
+.pcard .ph .tone{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:14px;vertical-align:4px}
+.pcard .pbody{display:grid;grid-template-columns:1fr 300px;gap:32px;flex:1;margin-top:22px;min-height:0}
+.pcard .pchart{height:440px}
+.pcard .pk-list{display:flex;flex-direction:column;gap:14px}
+.pcard .pkpi{border:1px solid #E3E8EF;border-radius:12px;padding:14px 16px}
+.pcard .pkpi .v{font-size:28px;font-weight:700;letter-spacing:-.02em}
+.pcard .pkpi .l{font-size:13px;color:#4A5568;font-weight:500}
+.pcard .pnote{font-size:13px;color:#A87700;background:#FFF5DB;border-radius:8px;padding:8px 12px;margin-top:4px}
+.pcard .pfoot{border-top:1px solid #E3E8EF;margin:0 -56px;padding:12px 56px;font-size:12px;color:#8792A2;display:flex;gap:12px}
+.pcard .pfoot b{color:#4A5568;font-weight:600}
+.pcard table{border-collapse:collapse;width:100%;font-size:16px}
+.pcard th{text-align:left;color:#4A5568;font-size:13px;padding:10px 12px;border-bottom:2px solid #E3E8EF}
+.pcard td{padding:11px 12px;border-bottom:1px solid #EEF1F5}
+.pcard td.num,.pcard th.num{text-align:right}
+/* Number boxes: type to edit; no spinner arrows */
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+/* Filters: tinted so they stand out; dropdown filters have no arrow */
+select.filter,input.filter{background-color:#DCE6FF;border:1px solid #8FAEF0;color:#1A3A94;font-weight:600;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 3h12l-4.6 5.4V13l-2.8 1.2V8.4z' fill='none' stroke='%231A3A94' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:9px center;background-size:13px 13px}
+select.filter:hover,select.filter:focus,input.filter:hover,input.filter:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.filter::placeholder{color:#5B78C2}
+select.filter{-webkit-appearance:none;-moz-appearance:none;appearance:none;padding-right:11px;cursor:pointer}
+select.filter,input.filter{padding-left:28px!important}
+.collapse-h{cursor:pointer;user-select:none}
+.collapse-h .caret{color:var(--accent);display:inline-block;width:14px}
+.inp.cell{width:82px;text-align:right;padding:4px 7px}
+/* Editable boxes react on hover and show a ring while editing; read-only numbers have no box */
+input.inp:not(.filter){cursor:text;transition:border-color .12s,background-color .12s,box-shadow .12s}
+input.inp:not(.filter):hover{border-color:#7C9BE8;background-color:#F7F9FF}
+input.inp:not(.filter):focus{border-color:var(--accent);background-color:#fff;box-shadow:0 0 0 3px var(--accent-soft);outline:none}
+.inp.cell.ov{border-color:var(--accent);background:#F3F6FE;font-weight:600}
+table.t.grid-in td{padding:5px 8px;vertical-align:middle}
+.tiny{font-size:11px;color:var(--ink3)}
+.cat-group{margin-bottom:12px}
+.cat-h{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:6px 0 4px}
+.cat-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #EEF1F5;font-size:13px}
+.capture{position:fixed;left:-20000px;top:0}
+</style>
+</head>
+<body>
+<div class="splash" id="splash"><div class="box">
+  <div class="brand" style="justify-content:center;font-size:18px"><span class="mark"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v4M8 6L3.5 10M8 6l4.5 4M3.5 10v3.5M12.5 10v3.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>BOM Gap Analyzer</div>
+  <div class="bar"><div id="splash-bar"></div></div>
+  <div id="splash-msg" class="muted">Starting</div>
+</div></div>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="mark"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v4M8 6L3.5 10M8 6l4.5 4M3.5 10v3.5M12.5 10v3.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>BOM Gap Analyzer</div>
+    <input class="projname" id="projname" data-change="rename" title="Project name">
+    <div class="spacer"></div>
+    <span class="pill" id="engine-pill"><span class="dot"></span><span>Engine</span></span>
+    <span class="pill" id="save-pill"><span class="dot"></span><span>Not saved</span></span>
+    <button class="btn" data-action="open-project" title="Open a project file">Open</button>
+    <button class="btn primary" data-action="save-project" title="Save the project file">Save</button>
+    <button class="btn ghost" data-action="menu" title="More">&#8943;</button>
+  </header>
+  <nav class="side" id="nav"></nav>
+  <main id="main"></main>
+</div>
+<input type="file" id="file-input" accept=".xlsx,.xlsm,.xls,.csv" multiple hidden>
+<input type="file" id="project-input" accept=".json,.bomproject" hidden>
+<div id="layer"></div>
+
+<script type="text/python" id="engine-src">"""
+BOM Gap Analyzer: calculation engine.
+
+Deterministic by design: no randomness, no AI model, no hidden defaults.
+Every number can be traced back to the BOM lines that produced it.
+
+The engine is stateless. The interface sends the whole project state (raw
+tabs, column mappings, analyst fixes, typed values) as JSON and gets JSON back.
+The same functions run in Pyodide (in the browser) and in normal Python
+(for tests).
+
+Main entry points (all take and return plain dicts):
+    propose_mapping(tab)          guess what a tab is and which column is which
+    analyze(state)                issues, readiness, 4-week feasibility, cost
+    trace(state, material)        arithmetic behind one requirement
+    where_used(state, part)       every finished good a part feeds
+    graph_data(state, fg)         nodes, edges, tree and money flow for the graphs
+"""
+
+import json
+import math
+import re
+from collections import Counter, defaultdict
+
+import networkx as nx
+
+ENGINE_VERSION = "2.0.0"
+HORIZON = 4          # planning horizon in weeks
+
+# ---------------------------------------------------------------------------
+# 1. Column mapping
+# ---------------------------------------------------------------------------
+
+# Header synonyms per field. Headers are compared after normalize_header().
+SYNONYMS = {
+    "parent": ["parent", "parent id", "parent part", "parent material", "assembly",
+               "assembly id", "parent item", "header material", "finished good", "fg"],
+    "child": ["child", "child id", "child part", "child item", "component",
+              "component id", "component material", "component number", "material component"],
+    "part_id": ["part", "part id", "part number", "part no", "material", "material number",
+                "material no", "item", "item number", "sku", "component", "child part"],
+    "qty_per": ["qty", "qty per", "quantity", "quantity per", "qty per parent", "usage",
+                "comp qty", "component quantity", "qty per assembly", "qty bun"],
+    "child_uom": ["uom", "unit", "un", "unit of measure", "child uom", "comp uom", "units"],
+    "uom": ["uom", "unit", "un", "unit of measure", "units", "stock uom"],
+    "scrap_factor": ["scrap factor", "scrap multiplier", "scrap mult"],
+    "scrap_pct": ["scrap", "scrap %", "scrap pct", "scrap percent", "component scrap",
+                  "comp scrap", "scrap rate"],
+    "yield_pct": ["yield", "yield %", "yield pct", "yield percent"],
+    "uom_conversion": ["conversion", "uom conversion", "conv factor", "conversion factor",
+                       "conv", "unit conversion"],
+    "level": ["level", "lvl", "explosion level", "bom level"],
+    "available_qty": ["available", "available qty", "avail qty", "qty available",
+                      "unrestricted", "unrestricted stock", "on hand", "stock", "available stock"],
+    "unit_cost": ["unit cost", "cost", "std cost", "standard cost", "material cost",
+                  "cost per unit", "moving avg price"],
+    "selling_price": ["selling price", "sale price", "sales price", "price", "list price", "asp"],
+    "description": ["description", "desc", "material description", "part description",
+                    "item description", "name"],
+    "part_type": ["type", "part type", "material type", "item type"],
+    "base_uom": ["base uom", "base unit", "base unit of measure"],
+    "week": ["week", "wk", "week no", "week number", "period", "bucket", "due week", "plan week",
+             "date", "due date", "delivery date", "week of", "week start"],
+    "demand_qty": ["demand", "demand qty", "forecast", "forecast qty", "order qty", "orders",
+                   "requirement", "required qty", "qty", "quantity", "units"],
+    "receipt_qty": ["receipt", "receipts", "receipt qty", "po qty", "open po qty", "open po",
+                    "scheduled receipt", "scheduled qty", "incoming", "inbound qty", "due qty",
+                    "qty", "quantity"],
+}
+
+# A header that names a week bucket: W1, Wk 2, Week 3, or a date.
+WEEK_HEADER = re.compile(r"^\s*(w|wk|week)\s*[-#.]?\s*(\d{1,2})\s*$", re.I)
+ISO_DATE = re.compile(r"^\s*(\d{4})-(\d{2})-(\d{2})")
+
+# Which fields each tab kind uses (first entries are required).
+KIND_FIELDS = {
+    "bom": {"required": ["parent", "child", "qty_per"],
+            "optional": ["child_uom", "scrap_factor", "scrap_pct", "yield_pct", "uom_conversion"]},
+    "indented": {"required": ["level", "part_id", "qty_per"],
+                 "optional": ["child_uom", "scrap_factor", "scrap_pct", "yield_pct", "uom_conversion"]},
+    "inventory": {"required": ["part_id", "available_qty"], "optional": ["uom"]},
+    "prices": {"required": ["part_id"], "optional": ["unit_cost", "selling_price"]},
+    "parts": {"required": ["part_id"], "optional": ["description", "part_type", "base_uom"]},
+    # Weekly tabs: either long (part, week, qty) or wide (part plus one column per week).
+    "demand": {"required": ["part_id"], "optional": ["week", "demand_qty"]},
+    "receipts": {"required": ["part_id"], "optional": ["week", "receipt_qty"]},
+    "ignore": {"required": [], "optional": []},
+}
+
+
+def normalize_header(h):
+    h = "" if h is None else str(h)
+    h = h.strip().lower().replace("_", " ").replace("/", " ").replace(".", " ")
+    h = re.sub(r"[^a-z0-9% ]", " ", h)
+    return re.sub(r"\s+", " ", h).strip()
+
+
+def _match_header(headers, field, taken):
+    """Return the header that best matches a field, or None."""
+    syns = SYNONYMS.get(field, [])
+    norm = {h: normalize_header(h) for h in headers if h not in taken}
+    for s in syns:                                   # exact match first
+        for h, n in norm.items():
+            if n == s:
+                return h
+    for s in syns:                                   # then whole-word containment
+        if len(s) < 3:
+            continue
+        for h, n in norm.items():
+            if re.search(r"\b" + re.escape(s) + r"\b", n):
+                return h
+    return None
+
+
+def _map_fields(headers, kind):
+    taken, cols = set(), {}
+    spec = KIND_FIELDS[kind]
+    for f in spec["required"] + spec["optional"]:
+        h = _match_header(headers, f, taken)
+        if h is not None:
+            cols[f] = h
+            taken.add(h)
+    return cols
+
+
+def week_columns(headers):
+    """Headers that are week buckets (W1, Week 2, a date or an Excel date serial)."""
+    return [h for h in headers if _week_key(h) is not None]
+
+
+def _week_key(v):
+    """Return ('n', week number) or ('d', day number) for a week label, else None."""
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        if 20000 <= v <= 80000:                      # Excel date serial
+            return ("d", int(v))
+        if float(v).is_integer() and 1 <= v <= 52:
+            return ("n", int(v))
+        return None
+    s = str(v).strip()
+    m = WEEK_HEADER.match(s)
+    if m:
+        return ("n", int(m.group(2)))
+    if re.fullmatch(r"\d{1,2}", s):
+        return ("n", int(s))
+    m = ISO_DATE.match(s)
+    if m:
+        import datetime
+        d = datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        return ("d", (d - datetime.date(1899, 12, 30)).days)
+    return None
+
+
+def _weekly_kind(tab, headers):
+    """Is this a demand or a receipts tab? Decided by header and sheet-name keywords."""
+    text = " ".join(normalize_header(h) for h in headers) + " " + normalize_header(tab.get("sheet"))
+    is_rec = re.search(r"\b(po|pos|purchase order|receipt|receipts|inbound|incoming|supply)\b", text)
+    is_dem = re.search(r"\b(demand|forecast|orders|order book|requirement|requirements|mps)\b", text)
+    if not (is_rec or is_dem):
+        return None
+    has_part = _match_header(headers, "part_id", set()) is not None
+    weeks = week_columns(headers)
+    has_week = _match_header(headers, "week", set()) is not None
+    if not has_part or not (weeks or has_week):
+        return None
+    return "receipts" if is_rec and not is_dem else "demand"
+
+
+def propose_mapping(tab):
+    """Guess the tab kind and its column mapping. The analyst confirms it."""
+    headers = [h for h in tab.get("headers", []) if h not in (None, "")]
+    wk = _weekly_kind(tab, headers)
+    if wk:
+        return map_columns(tab, wk)
+    candidates = {}
+    for kind in ("indented", "bom", "inventory", "prices", "parts"):
+        cols = _map_fields(headers, kind)
+        req = KIND_FIELDS[kind]["required"]
+        if all(f in cols for f in req):
+            candidates[kind] = cols
+    # Priority: structural kinds first, then the rest.
+    if "indented" in candidates and "parent" not in _map_fields(headers, "bom"):
+        kind = "indented"
+    elif "bom" in candidates:
+        kind = "bom"
+    elif "inventory" in candidates:
+        kind = "inventory"
+    elif "prices" in candidates and (
+            "unit_cost" in candidates["prices"] or "selling_price" in candidates["prices"]):
+        kind = "prices"
+    elif "parts" in candidates and len(candidates["parts"]) > 1:
+        kind = "parts"
+    else:
+        kind = "ignore"
+    cols = candidates.get(kind, {})
+    mapping = {"kind": kind, "columns": cols}
+    if kind == "indented":
+        mapping["root"] = _guess_root(tab)
+        mapping["root_guessed"] = True      # shown as unconfirmed until the analyst edits it
+    return mapping
+
+
+def map_columns(tab, kind):
+    """Re-guess columns when the analyst changes a tab's kind."""
+    headers = [h for h in tab.get("headers", []) if h not in (None, "")]
+    if kind in ("demand", "receipts"):
+        wcols = week_columns(headers)
+        taken = set(wcols)
+        cols = {}
+        pid = _match_header(headers, "part_id", taken)
+        if pid:
+            cols["part_id"] = pid
+            taken.add(pid)
+        if not wcols:                                 # long format: one row per part and week
+            qf = "demand_qty" if kind == "demand" else "receipt_qty"
+            for f in ("week", qf):
+                h = _match_header(headers, f, taken)
+                if h:
+                    cols[f] = h
+                    taken.add(h)
+        return {"kind": kind, "columns": cols, "week_columns": wcols}
+    out = {"kind": kind, "columns": _map_fields(headers, kind) if kind in KIND_FIELDS else {}}
+    if kind == "indented":
+        out["root"] = _guess_root(tab)
+    return out
+
+
+def schema():
+    return {"kinds": KIND_FIELDS, "version": ENGINE_VERSION, "horizon": HORIZON}
+
+
+def _guess_root(tab):
+    """For an indented BOM with no level-0 row, guess the top part from the sheet name."""
+    name = str(tab.get("sheet") or "").strip()
+    m = re.search(r"\b[A-Za-z]{1,6}-?\d{2,}\b", name)
+    return normalize_id(m.group(0)) if m else ""
+
+
+# ---------------------------------------------------------------------------
+# 2. Value parsing
+# ---------------------------------------------------------------------------
+
+def normalize_id(v):
+    """Trim, upper-case and collapse spaces. 100.0 from Excel becomes '100'."""
+    if v is None:
+        return ""
+    if isinstance(v, float) and v.is_integer():
+        v = int(v)
+    s = str(v).strip().upper()
+    return re.sub(r"\s+", " ", s)
+
+
+def parse_num(v):
+    """Parse '1,250', '5%', ' 2 ' and numbers. Blank or text returns None."""
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    s = str(v).strip().replace(",", "")
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    if s == "":
+        return None
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
+def parse_level(v):
+    """SAP-style levels: 1, '2', '.2', '..3', '*3*' all give the integer level."""
+    if v is None:
+        return None
+    if isinstance(v, (int, float)):
+        return int(v)
+    s = str(v).strip()
+    m = re.search(r"\d+", s)
+    if m:
+        return int(m.group(0))
+    dots = s.count(".")
+    return dots if dots else None
+
+
+def _has_pct(v):
+    return isinstance(v, str) and v.strip().endswith("%")
+
+
+def _as_fraction(raw, warnings, key, what):
+    """Turn a scrap or yield cell into a fraction.
+
+    '5%' and 5 both mean 5%. A bare value below 1 (0.05) is read as a fraction
+    and flagged, because it is ambiguous. '0.5%' keeps its percent sign: 0.005.
+    """
+    v = parse_num(raw)
+    if v is None or v <= 0:
+        return None
+    if _has_pct(raw) or v >= 1:
+        return v / 100.0
+    warnings.append((key, "%s %s read as %.4g%%; enter it with a %% sign if that is wrong"
+                     % (what, raw, v * 100)))
+    return v
+
+
+def _scrap_from_row(row, cols, warnings, key):
+    """Return the scrap multiplier for a line. One convention: multiplier >= 1."""
+    if "scrap_factor" in cols:
+        raw = row.get(cols["scrap_factor"])
+        v = parse_num(raw)
+        if v is not None and v > 0:
+            if _has_pct(raw):
+                return 1 + v / 100.0
+            if v < 1:
+                warnings.append((key, "Scrap factor %s read as %.4g%% extra (factor %.4g)"
+                                 % (raw, v * 100, 1 + v)))
+                return 1 + v
+            return v
+    if "scrap_pct" in cols:
+        f = _as_fraction(row.get(cols["scrap_pct"]), warnings, key, "Scrap")
+        if f is not None:
+            return 1 + f
+    if "yield_pct" in cols:
+        f = _as_fraction(row.get(cols["yield_pct"]), warnings, key, "Yield")
+        if f is not None and 0 < f <= 1:
+            return 1.0 / f
+    return 1.0
+
+
+TOL = 1e-9
+
+
+def is_short(required, available):
+    """Shortfall test with a relative tolerance so float noise never flips the answer."""
+    return required - available > TOL * max(1.0, abs(required))
+
+
+def shortfall_qty(required, available):
+    return required - available if is_short(required, available) else 0.0
+
+
+# ---------------------------------------------------------------------------
+# 3. Ingestion: raw tabs to normalized tables
+# ---------------------------------------------------------------------------
+
+def _rows_as_dicts(tab):
+    headers = tab.get("headers", [])
+    out = []
+    for r in tab.get("rows", []):
+        d = {}
+        for i, h in enumerate(headers):
+            if h in (None, ""):
+                continue
+            d[h] = r[i] if i < len(r) else None
+        out.append(d)
+    return out
+
+
+def ingest(state):
+    """Turn raw tabs plus mappings plus fixes into normalized tables."""
+    fixes = state.get("fixes") or {}
+    aliases = {normalize_id(k): normalize_id(v) for k, v in (fixes.get("aliases") or {}).items()}
+    conv_fix = fixes.get("conversions") or {}
+    qty_fix = fixes.get("qty") or {}
+    excluded = set(fixes.get("excluded") or [])
+
+    alias_loops = set()
+
+    def pid(v):
+        p = normalize_id(v)
+        seen = [p]
+        while p in aliases:                          # follow alias chains A > B > C
+            p = aliases[p]
+            if p in seen:                            # A > B > A: report, keep the original ID
+                alias_loops.add(" > ".join(seen + [p]))
+                return seen[0]
+            seen.append(p)
+        return p
+
+    lines, inventory, prices, parts = [], {}, {}, {}
+    raw_ids = Counter()          # IDs as written (normalized only), for near-match checks
+    notes = []                   # (line_key, message) informational warnings
+    inv_uom = {}
+
+    for tab in state.get("tabs", []):
+        m = (state.get("mappings") or {}).get(tab["id"]) or {}
+        kind, cols = m.get("kind", "ignore"), m.get("columns", {})
+        rows = _rows_as_dicts(tab)
+        label = "%s / %s" % (tab.get("file", ""), tab.get("sheet", ""))
+
+        if kind == "bom":
+            for i, row in enumerate(rows):
+                key = "%s:%d" % (tab["id"], i)
+                praw, craw = row.get(cols.get("parent")), row.get(cols.get("child"))
+                if normalize_id(praw) == "" and normalize_id(craw) == "":
+                    continue
+                raw_ids[normalize_id(praw)] += 1
+                raw_ids[normalize_id(craw)] += 1
+                lines.append(_make_line(key, label, i, pid(praw), pid(craw), row, cols,
+                                        qty_fix, conv_fix, excluded, notes))
+
+        elif kind == "indented":
+            root = pid(m.get("root", ""))
+            stack = {}
+            if root:
+                stack[0] = root
+                raw_ids[root] += 1
+            for i, row in enumerate(rows):
+                key = "%s:%d" % (tab["id"], i)
+                lvl = parse_level(row.get(cols.get("level")))
+                part_raw = row.get(cols.get("part_id"))
+                part = pid(part_raw)
+                if lvl is None or part == "":
+                    continue
+                raw_ids[normalize_id(part_raw)] += 1
+                stack[lvl] = part
+                for deeper in [k for k in stack if k > lvl]:
+                    del stack[deeper]
+                parent = stack.get(lvl - 1)
+                if parent is None:
+                    if lvl == 0 or not root:
+                        continue                     # a level-0 header row or no root known
+                    notes.append((key, "Row skipped: no parent at level %d" % (lvl - 1)))
+                    continue
+                lines.append(_make_line(key, label, i, parent, part, row, cols,
+                                        qty_fix, conv_fix, excluded, notes))
+
+        elif kind == "inventory":
+            for i, row in enumerate(rows):
+                p = pid(row.get(cols.get("part_id")))
+                q = parse_num(row.get(cols.get("available_qty")))
+                if p and q is not None:
+                    inventory[p] = inventory.get(p, 0.0) + q
+                    if "uom" in cols and row.get(cols["uom"]) not in (None, ""):
+                        inv_uom[p] = str(row.get(cols["uom"])).strip().upper()
+
+        elif kind == "prices":
+            for row in rows:
+                p = pid(row.get(cols.get("part_id")))
+                if not p:
+                    continue
+                c = parse_num(row.get(cols.get("unit_cost"))) if "unit_cost" in cols else None
+                s = parse_num(row.get(cols.get("selling_price"))) if "selling_price" in cols else None
+                rec = prices.setdefault(p, {})
+                if c is not None:
+                    rec["unit_cost"] = c
+                if s is not None:
+                    rec["selling_price"] = s
+
+        elif kind == "parts":
+            for row in rows:
+                p = pid(row.get(cols.get("part_id")))
+                if not p:
+                    continue
+                rec = parts.setdefault(p, {})
+                for f in ("description", "part_type", "base_uom"):
+                    if f in cols and row.get(cols[f]) not in (None, ""):
+                        rec[f] = str(row.get(cols[f])).strip()
+
+    # Analyst overrides typed into the tool win over file values.
+    ov = state.get("overrides") or {}
+    for p, v in (ov.get("unit_cost") or {}).items():
+        if parse_num(v) is not None:
+            prices.setdefault(pid(p), {})["unit_cost"] = parse_num(v)
+    for p, v in (ov.get("selling_price") or {}).items():
+        if parse_num(v) is not None:
+            prices.setdefault(pid(p), {})["selling_price"] = parse_num(v)
+    for p, v in (ov.get("available") or {}).items():
+        if parse_num(v) is not None:
+            inventory[pid(p)] = parse_num(v)
+
+    return {"lines": lines, "inventory": inventory, "prices": prices, "parts": parts,
+            "raw_ids": raw_ids, "notes": notes, "inv_uom": inv_uom,
+            "alias_loops": sorted(alias_loops), "dup_choice": fixes.get("duplicates") or {}}
+
+
+def _make_line(key, label, row_index, parent, child, row, cols, qty_fix, conv_fix, excluded, notes):
+    qty = parse_num(qty_fix[key]) if key in qty_fix else parse_num(row.get(cols.get("qty_per")))
+    uom = row.get(cols["child_uom"]) if "child_uom" in cols else None
+    uom = str(uom).strip().upper() if uom not in (None, "") else ""
+    if key in conv_fix:
+        conv = parse_num(conv_fix[key])
+    elif "uom_conversion" in cols:
+        conv = parse_num(row.get(cols["uom_conversion"]))
+    else:
+        conv = None
+    scrap = _scrap_from_row(row, cols, notes, key)
+    return {"key": key, "source": label, "row": row_index + 2,  # +2: header row, 1-based
+            "parent": parent, "child": child, "qty_per": qty, "uom": uom,
+            "conversion": conv, "scrap": scrap, "excluded": key in excluded}
+
+
+# ---------------------------------------------------------------------------
+# 4. Validation and model building
+# ---------------------------------------------------------------------------
+
+def _id_key(p):
+    return re.sub(r"[^A-Z0-9]", "", p)
+
+
+def build_model(state):
+    """Normalize, validate and build the BOM graph. Returns a model dict."""
+    data = ingest(state)
+    lines = data["lines"]
+    issues = []
+
+    def issue(severity, code, message, **kw):
+        issues.append(dict(severity=severity, code=code, message=message, **kw))
+
+    # Near-matching IDs (SR-100 vs SR100 vs sr100). Suggest; never merge silently.
+    groups = defaultdict(set)
+    all_ids = set(data["raw_ids"]) | set(data["inventory"]) | set(data["prices"])
+    used_ids = set()
+    for ln in lines:
+        used_ids.add(ln["parent"])
+        used_ids.add(ln["child"])
+    for p in (used_ids | set(data["inventory"]) | set(data["prices"])):
+        if p:
+            groups[_id_key(p)].add(p)
+    for k, ids in sorted(groups.items()):
+        if len(ids) > 1:
+            ranked = sorted(ids, key=lambda x: (-data["raw_ids"].get(x, 0), -("-" in x), x))
+            canon = ranked[0]
+            issue("warning", "near_match",
+                  "These IDs look like the same part: %s" % ", ".join(sorted(ids)),
+                  parts=sorted(ids), fix={"type": "alias", "to": canon,
+                                          "from": [x for x in ranked[1:]]})
+
+    # Line-level checks.
+    seen_pairs = {}
+    good = []
+    dup_block = set()                                # parents with an unresolved conflicting duplicate
+    for ln in lines:
+        where = "%s row %d" % (ln["source"], ln["row"])
+        if ln["excluded"]:
+            continue
+        if ln["parent"] == ln["child"]:
+            issue("error", "self_reference", "%s: %s lists itself as a component" % (where, ln["parent"]),
+                  line=ln["key"], parts=[ln["parent"]], fix={"type": "exclude", "line": ln["key"]})
+            ln["excluded"] = True
+            ln["blocked"] = True
+            continue
+        if ln["qty_per"] is None or ln["qty_per"] <= 0:
+            issue("error", "missing_qty", "%s: quantity missing for %s in %s" % (where, ln["child"], ln["parent"]),
+                  line=ln["key"], parts=[ln["parent"], ln["child"]],
+                  fix={"type": "qty", "line": ln["key"]})
+            ln["blocked"] = True
+            continue
+        pair = (ln["parent"], ln["child"])
+        if pair in seen_pairs:
+            first = seen_pairs[pair]
+            choice = data["dup_choice"].get(ln["key"])
+            if choice == "sum":                      # split item positions: add them up
+                first["qty_per"] += ln["qty_per"]
+                continue
+            if choice == "first":
+                continue
+            same = (abs(first["qty_per"] - ln["qty_per"]) <= TOL * max(1.0, first["qty_per"])
+                    and first["uom"] == ln["uom"] and first["scrap"] == ln["scrap"])
+            if same:
+                issue("warning", "duplicate_line",
+                      "%s: %s in %s repeats %s row %d with the same quantity; the first line is used"
+                      % (where, ln["child"], ln["parent"], first["source"], first["row"]),
+                      line=ln["key"], parts=list(pair), fix={"type": "exclude", "line": ln["key"]})
+            else:
+                issue("error", "conflicting_duplicate",
+                      "%s: %s in %s appears again with quantity %s (first: %s at %s row %d). "
+                      "Choose whether to add them up or keep only the first"
+                      % (where, ln["child"], ln["parent"], _num(ln["qty_per"]), _num(first["qty_per"]),
+                         first["source"], first["row"]),
+                      line=ln["key"], parts=list(pair), fix={"type": "duplicate", "line": ln["key"]})
+                dup_block.add(ln["parent"])
+            continue
+        seen_pairs[pair] = ln
+        good.append(ln)
+
+
+    # Base unit per part: parts table, then inventory unit, then most common usage unit.
+    usage_uoms = defaultdict(Counter)
+    for ln in good:
+        if ln["uom"]:
+            usage_uoms[ln["child"]][ln["uom"]] += 1
+    base_uom = {}
+    for p in set(usage_uoms) | set(data["parts"]) | set(data["inv_uom"]):
+        if data["parts"].get(p, {}).get("base_uom"):
+            base_uom[p] = data["parts"][p]["base_uom"].upper()
+        elif p in data["inv_uom"]:
+            base_uom[p] = data["inv_uom"][p]
+        elif usage_uoms[p]:
+            base_uom[p] = sorted(usage_uoms[p].items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+
+    final = []
+    for ln in good:
+        b = base_uom.get(ln["child"], "")
+        needs_conv = ln["uom"] and b and ln["uom"] != b
+        bad_conv = ln["conversion"] is not None and ln["conversion"] <= 0
+        if (needs_conv and ln["conversion"] is None) or bad_conv:
+            issue("error", "missing_conversion",
+                  ("%s row %d: unit conversion %s is not a positive number for %s"
+                   % (ln["source"], ln["row"], _num(ln["conversion"]), ln["child"])) if bad_conv else
+                  ("%s row %d: %s is used in %s but stocked in %s; enter how many %s per %s"
+                   % (ln["source"], ln["row"], ln["child"], ln["uom"], b, b, ln["uom"])),
+                  line=ln["key"], parts=[ln["parent"], ln["child"]],
+                  fix={"type": "conversion", "line": ln["key"], "from_uom": ln["uom"], "to_uom": b})
+            ln["blocked"] = True
+            continue
+        conv = ln["conversion"] if ln["conversion"] is not None else 1.0
+        ln["conv_used"] = conv
+        ln["ratio"] = ln["qty_per"] * conv * ln["scrap"]
+        final.append(ln)
+
+    for key, msg in data["notes"]:
+        issue("info", "note", msg, line=key)
+
+    # Inventory unit check. Stock in a different unit than the BOM can't be compared,
+    # so it is treated as unknown until the analyst enters it in the right unit.
+    typed_stock = {normalize_id(k) for k in ((state.get("overrides") or {}).get("available") or {})}
+    for p, u in sorted(data["inv_uom"].items()):
+        if p in usage_uoms and base_uom.get(p) and u != base_uom[p] and p not in typed_stock:
+            issue("error", "inventory_uom", "Stock for %s is counted in %s but the BOM uses %s; "
+                  "enter the available quantity in %s" % (p, u, base_uom[p], base_uom[p]), parts=[p],
+                  fix={"type": "stock", "part": p})
+            data["inventory"].pop(p, None)
+
+    for loop in data["alias_loops"]:
+        issue("error", "alias_loop", "Your ID merges point back to themselves (%s); undo one of them" % loop)
+
+    g = nx.DiGraph()
+    for ln in final:
+        g.add_edge(ln["parent"], ln["child"], **{k: ln[k] for k in
+                   ("key", "source", "row", "qty_per", "uom", "conv_used", "scrap", "ratio")})
+    blocked_nodes = set(dup_block)
+    for ln in lines:
+        if ln.get("blocked") and not ln["excluded"]:
+            blocked_nodes.add(ln["parent"])
+            g.add_node(ln["parent"])
+            g.add_node(ln["child"])
+
+    cycles = []
+    if not nx.is_directed_acyclic_graph(g):
+        for cyc in nx.simple_cycles(g):
+            cycles.append(cyc)
+            if len(cycles) >= 5:
+                break
+        types = {p: str(v.get("part_type", "")).upper() for p, v in data["parts"].items()}
+        for cyc in cycles:
+            options = []
+            for a, b in zip(cyc, cyc[1:] + cyc[:1]):
+                e = g.edges[a, b]
+                options.append({"line": e["key"], "parent": a, "child": b,
+                                "source": e["source"], "row": e["row"]})
+            # Suggest the line most likely to be the mistake: a raw material used as a
+            # parent, else the parent with the fewest components. The analyst decides.
+            sug = min(options, key=lambda o: (types.get(o["parent"], "") not in ("RAW", "RM", "ROH"),
+                                              g.out_degree(o["parent"]), o["parent"]))
+            issue("error", "cycle", "Loop: %s contains itself (%s). Suggested fix: remove %s > %s (%s row %d)"
+                  % (cyc[0], " > ".join(cyc + [cyc[0]]), sug["parent"], sug["child"],
+                     sug["source"], sug["row"]),
+                  parts=list(cyc), line=sug["line"],
+                  fix={"type": "exclude", "line": sug["line"], "options": options})
+
+    # Orphans: stock or prices for parts that no BOM uses.
+    bom_parts = set(g.nodes)
+    for p in sorted(set(data["inventory"]) - bom_parts):
+        issue("info", "orphan_stock", "Stock listed for %s, which no BOM uses" % p, parts=[p])
+
+    # A finished good whose only lines are blocked still counts, so it shows as blocked.
+    roots = sorted(n for n in g.nodes if g.in_degree(n) == 0 and (g.out_degree(n) > 0 or n in blocked_nodes))
+    leaves = sorted(n for n in g.nodes if g.out_degree(n) == 0 and g.in_degree(n) > 0)
+
+    mids = sorted(p for p in data["inventory"] if p in g and g.out_degree(p) > 0)
+    if mids:
+        issue("info", "assembly_stock", "Stock for assemblies is not netted in version 1, so requirements "
+              "assume these are built from raw materials: %s" % ", ".join(mids[:10]) +
+              (" and %d more" % (len(mids) - 10) if len(mids) > 10 else ""), parts=mids)
+
+    # Precomputed reachability, reused by every module (avoids repeated graph walks).
+    desc = {}
+    fg_leaves, leaf_fgs = {}, defaultdict(list)
+    if not cycles:
+        for fg in roots:
+            desc[fg] = nx.descendants(g, fg)
+            fg_leaves[fg] = sorted(n for n in desc[fg] if g.out_degree(n) == 0)
+            for m in fg_leaves[fg]:
+                leaf_fgs[m].append(fg)
+
+    fg_blocked = {}
+    if not cycles:
+        for fg in roots:
+            bad = sorted((desc[fg] | {fg}) & blocked_nodes)
+            if bad:
+                fg_blocked[fg] = bad
+
+    sev_order = {"error": 0, "warning": 1, "info": 2}
+    issues.sort(key=lambda x: (sev_order[x["severity"]], x["code"], x["message"]))
+    for i, it in enumerate(issues):
+        it["id"] = "%s-%d" % (it["code"], i)
+
+    return {"graph": g, "issues": issues, "roots": roots, "leaves": leaves,
+            "cycles": cycles, "fg_blocked": fg_blocked, "inventory": data["inventory"],
+            "desc": desc, "fg_leaves": fg_leaves, "leaf_fgs": {k: sorted(v) for k, v in leaf_fgs.items()},
+            "pu_cache": {},
+            "prices": data["prices"], "parts": data["parts"], "base_uom": base_uom,
+            "line_count": len(lines)}
+
+
+_MODEL_CACHE = {}
+
+
+def get_model(state):
+    """Build the model once per distinct data input (results never stored)."""
+    ov = state.get("overrides") or {}
+    ov = {k: ov.get(k) for k in ("available", "unit_cost", "selling_price")}   # weekly edits don't rebuild the model
+    key = json.dumps([state.get("tabs"), state.get("mappings"), state.get("fixes"), ov],
+                     sort_keys=True, default=str)
+    if key not in _MODEL_CACHE:
+        _MODEL_CACHE.clear()
+        _MODEL_CACHE[key] = build_model(state)
+    return _MODEL_CACHE[key]
+
+
+# ---------------------------------------------------------------------------
+# 5. Explosion
+# ---------------------------------------------------------------------------
+
+def per_unit(model, fg, use_scrap=True):
+    """Gross requirement of every node to build ONE unit of fg (sums all paths).
+
+    Walks the finished good's sub-graph once in topological order, so shared
+    assemblies are counted once per path without enumerating paths. Cached on
+    the model because every module needs it.
+    """
+    key = (fg, use_scrap)
+    cache = model["pu_cache"]
+    if key in cache:
+        return cache[key]
+    g = model["graph"]
+    req = defaultdict(float)
+    req[fg] = 1.0
+    nodes = model["desc"].get(fg, set()) | {fg}
+    for node in nx.topological_sort(g.subgraph(nodes)):
+        q = req.get(node, 0.0)
+        if q == 0:
+            continue
+        for child in g.successors(node):
+            e = g.edges[node, child]
+            r = e["ratio"] if use_scrap else e["qty_per"] * e["conv_used"]
+            req[child] += q * r
+    cache[key] = dict(req)
+    return cache[key]
+
+
+def explode(model, plan, use_scrap=True):
+    """Total requirement per node for a plan {fg: qty}."""
+    total = defaultdict(float)
+    for fg, q in sorted(plan.items()):
+        if q and fg in model["graph"]:
+            for n, v in per_unit(model, fg, use_scrap).items():
+                total[n] += q * v
+    return dict(total)
+
+
+def _fg_leaves(model, fg):
+    return model["fg_leaves"].get(fg, [])
+
+
+def _num(v):
+    return "%g" % v if isinstance(v, (int, float)) else str(v)
+
+
+# ---------------------------------------------------------------------------
+# 6. Weekly inputs: demand signal and scheduled receipts
+# ---------------------------------------------------------------------------
+
+def _alias_resolver(state):
+    aliases = {normalize_id(k): normalize_id(v)
+               for k, v in (((state.get("fixes") or {}).get("aliases")) or {}).items()}
+
+    def pid(v):
+        p = normalize_id(v)
+        seen = [p]
+        while p in aliases:
+            p = aliases[p]
+            if p in seen:
+                return seen[0]
+            seen.append(p)
+        return p
+    return pid
+
+
+def _day_label(day):
+    import datetime
+    d = datetime.date(1899, 12, 30) + datetime.timedelta(days=day)
+    return "Wk of %s %d" % (d.strftime("%b"), d.day)
+
+
+def time_inputs(state, model):
+    """Demand per finished good and receipts per raw material, as HORIZON weekly buckets.
+
+    Accepts long tabs (part, week, qty) and wide tabs (part plus one column per
+    week). Weeks can be numbers (1, W2, Week 3) or dates; dates are grouped into
+    weeks starting on the Monday of the earliest date. Values typed in the tool
+    (overrides) replace file values cell by cell.
+    """
+    pid = _alias_resolver(state)
+    raw, notes = [], []
+    has = {"demand": False, "receipts": False}
+    for tab in state.get("tabs", []):
+        m = (state.get("mappings") or {}).get(tab["id"]) or {}
+        kind = m.get("kind")
+        if kind not in ("demand", "receipts"):
+            continue
+        has[kind] = True
+        cols, wcols = m.get("columns", {}), m.get("week_columns") or []
+        qf = "demand_qty" if kind == "demand" else "receipt_qty"
+        if "part_id" not in cols:
+            continue
+        for i, row in enumerate(_rows_as_dicts(tab)):
+            p = pid(row.get(cols["part_id"]))
+            if not p:
+                continue
+            if wcols:
+                for h in wcols:
+                    q = parse_num(row.get(h))
+                    if q:
+                        raw.append((kind, p, _week_key(h), q))
+            elif "week" in cols and qf in cols:
+                q = parse_num(row.get(cols[qf]))
+                key = _week_key(row.get(cols["week"]))
+                if q and key is None:
+                    notes.append("%s row %d: week %r not recognized, row skipped"
+                                 % (tab.get("sheet"), i + 2, row.get(cols["week"])))
+                elif q:
+                    raw.append((kind, p, key, q))
+    days = [k[1] for kind, _, k, _ in raw if k[0] == "d" and kind == "demand"] or \
+           [k[1] for _, _, k, _ in raw if k[0] == "d"]
+    start = None
+    if days:
+        mn = min(days)
+        start = mn - ((mn - 2) % 7)                   # Excel serial day 2 is a Monday
+
+    def index(k):
+        return k[1] if k[0] == "n" else (k[1] - start) // 7 + 1
+
+    roots, leaves = set(model["roots"]), set(model["leaves"])
+    demand = {f: [0.0] * HORIZON for f in model["roots"]}
+    receipts = {}
+    late, past, stray = Counter(), Counter(), defaultdict(set)
+    for kind, p, k, q in raw:
+        w = index(k)
+        if w < 1:
+            past[kind] += 1
+            w = 1
+        if w > HORIZON:
+            late[kind] += 1
+            continue
+        if kind == "demand":
+            if p not in roots:
+                stray["demand"].add(p)
+                continue
+            demand[p][w - 1] += q
+        else:
+            if p not in leaves:
+                stray["receipts"].add(p)
+                continue
+            receipts.setdefault(p, [0.0] * HORIZON)[w - 1] += q
+    ov = state.get("overrides") or {}
+    for f, weeks in (ov.get("demand") or {}).items():
+        f = pid(f)
+        if f in demand:
+            for w, q in weeks.items():
+                if 1 <= int(w) <= HORIZON and parse_num(q) is not None:
+                    demand[f][int(w) - 1] = max(0.0, parse_num(q))
+    for mtl, weeks in (ov.get("receipts") or {}).items():
+        mtl = pid(mtl)
+        if mtl in leaves:
+            row = receipts.setdefault(mtl, [0.0] * HORIZON)
+            for w, q in weeks.items():
+                if 1 <= int(w) <= HORIZON and parse_num(q) is not None:
+                    row[int(w) - 1] = max(0.0, parse_num(q))
+    receipts = {k: v for k, v in receipts.items() if any(v)}
+    for kind, n in sorted(late.items()):
+        notes.append("%d %s entries fall after week %d and are outside this plan" % (n, kind, HORIZON))
+    for kind, n in sorted(past.items()):
+        notes.append("%d past-due %s entries were moved into week 1" % (n, kind))
+    if stray["demand"]:
+        notes.append("Demand ignored for parts that aren't finished goods in the BOM: %s"
+                     % ", ".join(sorted(stray["demand"])[:8]))
+    if stray["receipts"]:
+        notes.append("Receipts ignored for parts that aren't raw materials in the BOM: %s"
+                     % ", ".join(sorted(stray["receipts"])[:8]))
+    labels = [_day_label(start + 7 * i) for i in range(HORIZON)] if start is not None else \
+             ["Week %d" % (i + 1) for i in range(HORIZON)]
+    return {"demand": demand, "receipts": receipts, "labels": labels, "notes": notes,
+            "has_demand_tab": has["demand"], "has_receipts_tab": has["receipts"]}
+
+
+# ---------------------------------------------------------------------------
+# 7. Optimization (best buildable mix in one week)
+# ---------------------------------------------------------------------------
+
+def solve_mix(model, avail, fgs, upper=None, prices=None):
+    """Best integer mix subject to stock. Exact solver (SciPy MILP / HiGHS).
+
+    Objective: revenue when every finished good involved has a selling price
+    above 0, otherwise total units. Never a mix of the two.
+    Returns ({fg: units}, method, objective). Without SciPy it falls back to a
+    greedy integer method and says so.
+    """
+    g = model["graph"]
+    fgs = [f for f in fgs if f in g]
+    mats = sorted({m for f in fgs for m in _fg_leaves(model, f)})
+    A = []
+    pu = {f: per_unit(model, f) for f in fgs}
+    for m in mats:
+        A.append([pu[f].get(m, 0.0) for f in fgs])
+    b = [max(0.0, avail.get(m, 0.0)) for m in mats]
+    pr = [(prices or {}).get(f) for f in fgs]
+    objective = "revenue" if fgs and all(p is not None and p > 0 for p in pr) else "units"
+    w = [float(p) for p in pr] if objective == "revenue" else [1.0] * len(fgs)
+    ub = []
+    for j, f in enumerate(fgs):
+        cap = min((b[i] / A[i][j]) for i in range(len(mats)) if A[i][j] > 0) if any(
+            A[i][j] > 0 for i in range(len(mats))) else 0.0
+        if upper is not None:
+            cap = min(cap, float(upper.get(f, 0.0)))
+        ub.append(int(cap + 1e-9))
+    try:
+        import numpy as np
+        from scipy.optimize import milp, LinearConstraint, Bounds
+        if not fgs:
+            return {}, "milp", objective
+        b_tol = [v + TOL * max(1.0, v) for v in b]          # an exact fit counts as feasible
+        res = milp(c=-np.array(w), constraints=[LinearConstraint(np.array(A), -np.inf, np.array(b_tol))] if mats else [],
+                   integrality=np.ones(len(fgs)), bounds=Bounds(np.zeros(len(fgs)), np.array(ub, dtype=float)))
+        if res.status == 0:
+            x = [int(round(v)) for v in res.x]
+            return {f: x[j] for j, f in enumerate(fgs)}, "milp", objective
+    except ImportError:
+        pass
+    # Greedy fallback: highest weight per unit first, deterministic order.
+    x = {f: 0 for f in fgs}
+    left = list(b)
+    for j in sorted(range(len(fgs)), key=lambda j: (-w[j], fgs[j])):
+        cap = ub[j]
+        for i in range(len(mats)):
+            if A[i][j] > 0:
+                cap = min(cap, int(left[i] / A[i][j] + 1e-9))
+        x[fgs[j]] = max(0, cap)
+        for i in range(len(mats)):
+            left[i] -= A[i][j] * x[fgs[j]]
+    return x, "greedy", objective
+
+
+# ---------------------------------------------------------------------------
+# 8. Feasibility over the horizon
+# ---------------------------------------------------------------------------
+
+UNLIMITED = 1e15
+
+
+def _status(cov):
+    if cov is None:
+        return "unknown"
+    if cov < 1 - TOL:
+        return "red"
+    if cov < 1.2 - TOL:
+        return "amber"
+    return "green"
+
+
+def feasibility(model, ti):
+    """Week-by-week plan against the demand signal.
+
+    Each week: stock = carry-over + that week's receipts. The tool builds as much
+    of the week's demand plus any backlog as stock allows (exact integer solver,
+    highest selling value first when every product has a price, otherwise most
+    units). Unmet demand carries forward as backlog. Production happens in the
+    week it is needed (no lead-time offset).
+    """
+    g, prices = model["graph"], model["prices"]
+    fgs = [f for f in model["roots"] if f not in model["fg_blocked"]]
+    demand = {f: ti["demand"][f] for f in fgs}
+    dem_fgs = [f for f in fgs if any(demand[f])]
+    receipts = ti["receipts"]
+    onhand = model["inventory"]
+    sell = {f: prices.get(f, {}).get("selling_price") for f in fgs}
+    pu = {f: per_unit(model, f) for f in dem_fgs}
+    mats = sorted({m for f in dem_fgs for m in _fg_leaves(model, f)})
+    unknown = [m for m in mats if m not in onhand]
+
+    # Gross view: what each material needs if every week's demand is built on time.
+    mat_rows = []
+    for m in mats:
+        req = [sum(demand[f][w] * pu[f].get(m, 0.0) for f in dem_fgs) for w in range(HORIZON)]
+        rec = receipts.get(m, [0.0] * HORIZON)
+        a = onhand.get(m)
+        bal, pab, cov, st = (a or 0.0), [], [], []
+        cum_req, cum_avail = 0.0, (a or 0.0)
+        first_short = None
+        for w in range(HORIZON):
+            bal += rec[w] - req[w]
+            cum_req += req[w]
+            cum_avail += rec[w]
+            pab.append(bal if a is not None else None)
+            c = (cum_avail / cum_req if cum_req > 0 else None) if a is not None else None
+            cov.append(c)
+            s_ = "unknown" if a is None else ("green" if cum_req <= 0 else _status(c))
+            st.append(s_)
+            if a is not None and first_short is None and is_short(cum_req, cum_avail):
+                first_short = w + 1
+        total_req = sum(req)
+        total_av = (a or 0.0) + sum(rec)
+        worst = min((c for c in cov if c is not None), default=None)
+        mat_rows.append({"part": m, "description": model["parts"].get(m, {}).get("description", ""),
+                         "uom": model["base_uom"].get(m, ""), "on_hand": a, "receipts": rec,
+                         "required": req, "balance": pab, "coverage": cov, "status": st,
+                         "total_required": total_req, "total_receipts": sum(rec),
+                         "total_available": total_av if a is not None else None,
+                         "shortfall": shortfall_qty(total_req, total_av) if a is not None else None,
+                         "first_short_week": first_short, "worst_coverage": worst,
+                         "overall": "unknown" if a is None else ("red" if first_short else _status(worst) if worst is not None else "green"),
+                         "fgs": model["leaf_fgs"].get(m, [])})
+    mat_rows.sort(key=lambda r: (r["first_short_week"] or 99,
+                                 r["worst_coverage"] if r["worst_coverage"] is not None else 1e18, r["part"]))
+
+    # Week-by-week build with backlog.
+    stock = {m: (onhand[m] if m in onhand else UNLIMITED) for m in mats}
+    backlog = {f: 0.0 for f in dem_fgs}
+    weeks, per_fg, method, objective = [], {f: [] for f in dem_fgs}, None, None
+    for w in range(HORIZON):
+        for m in mats:
+            if m in onhand:
+                stock[m] += receipts.get(m, [0.0] * HORIZON)[w]
+        want = {f: demand[f][w] + backlog[f] for f in dem_fgs}
+        if any(v > 0 for v in want.values()):
+            x, method, objective = solve_mix(model, stock, [f for f in dem_fgs if want[f] > 0], want, sell)
+        else:
+            x = {}
+        tot = {"week": w + 1, "label": ti["labels"][w], "demand": 0.0, "backlog_in": 0.0,
+               "built": 0.0, "on_time": 0.0, "late_filled": 0.0, "short": 0.0}
+        for f in dem_fgs:
+            b = float(x.get(f, 0))
+            for m in _fg_leaves(model, f):
+                if m in onhand:
+                    stock[m] -= b * pu[f].get(m, 0.0)
+            late_filled = min(backlog[f], b)
+            on_time = b - late_filled
+            new_backlog = max(0.0, want[f] - b)
+            per_fg[f].append({"demand": demand[f][w], "backlog_in": backlog[f], "built": b,
+                              "on_time": on_time, "late_filled": late_filled, "short": new_backlog})
+            for k, v in (("demand", demand[f][w]), ("backlog_in", backlog[f]), ("built", b),
+                         ("on_time", on_time), ("late_filled", late_filled), ("short", new_backlog)):
+                tot[k] += v
+            backlog[f] = new_backlog
+        weeks.append(tot)
+
+    total_dem = sum(t["demand"] for t in weeks)
+    total_on_time = sum(t["on_time"] for t in weeks)
+    unmet_end = weeks[-1]["short"] if weeks else 0.0
+    first_short_week = next((t["week"] for t in weeks if t["short"] > 0), None)
+    shorts = [r for r in mat_rows if r["first_short_week"]]
+    bottleneck = None
+    if shorts:
+        bottleneck = min(shorts, key=lambda r: (r["first_short_week"],
+                         min(b for b in r["balance"] if b is not None) / max(r["total_required"], 1e-12),
+                         r["part"]))["part"]
+    known = [r for r in mat_rows if r["worst_coverage"] is not None]
+    tightest = min(known, key=lambda r: (r["worst_coverage"], r["part"]))["part"] if known else None
+    fg_rows = [{"fg": f, "description": model["parts"].get(f, {}).get("description", ""),
+                "weeks": per_fg[f], "demand": sum(demand[f]),
+                "built": sum(x["built"] for x in per_fg[f]), "on_time": sum(x["on_time"] for x in per_fg[f]),
+                "unmet": per_fg[f][-1]["short"] if per_fg[f] else 0.0,
+                "fill_rate": (sum(x["on_time"] for x in per_fg[f]) / sum(demand[f])) if sum(demand[f]) else None}
+               for f in dem_fgs]
+
+    if not dem_fgs:
+        answer, feasible = "No demand entered yet.", None
+    elif unknown:
+        answer, feasible = "Incomplete: stock is missing for %d materials." % len(unknown), None
+    elif first_short_week is None:
+        answer, feasible = "Yes. All %d weeks of demand can be built on time." % HORIZON, True
+    else:
+        short_weeks = [t for t in weeks if t["short"] > 0]
+        hit = sorted({f for f in dem_fgs for x in per_fg[f] if x["short"] > 0})
+        n = lambda v: format(int(round(v)), ",")
+        if len(short_weeks) == 1:
+            t = short_weeks[0]
+            lead = "No. Week %d ends %s units short (%s)" % (t["week"], n(t["short"]), ", ".join(hit))
+        else:
+            parts = ["week %d by %s" % (t["week"], n(t["short"])) for t in short_weeks]
+            lead = "No. %d of %d weeks end short: %s units (%s)" % (
+                len(short_weeks), HORIZON, ", ".join(parts[:-1]) + " and " + parts[-1], ", ".join(hit))
+        last = short_weeks[-1]["week"]
+        tail = ("%s units are still unmet after week %d" % (n(unmet_end), HORIZON)) if unmet_end > 0 \
+            else "the backlog clears in week %d" % (last + 1)
+        answer, feasible = "%s; %s." % (lead, tail), False
+    return {"answer": answer, "feasible": feasible, "weeks": weeks, "labels": ti["labels"],
+            "finished_goods": fg_rows, "materials": mat_rows, "bottleneck": bottleneck,
+            "tightest": tightest, "first_short_week": first_short_week,
+            "on_time_rate": (total_on_time / total_dem) if total_dem else None,
+            "total_demand": total_dem, "total_built": sum(t["built"] for t in weeks),
+            "unmet_end": unmet_end, "unknown_stock": unknown, "mix_method": method,
+            "mix_objective": objective, "has_receipts": bool(receipts),
+            "blocked_fgs": sorted(model["fg_blocked"])}
+
+
+# ---------------------------------------------------------------------------
+# 9. Cost
+# ---------------------------------------------------------------------------
+
+def cost(model, feas):
+    """Material cost of the plan (total demand over the horizon), scrap, shortfall cost,
+    and revenue at risk (demand still unmet after the last week)."""
+    prices = model["prices"]
+    plan = {r["fg"]: r["demand"] for r in feas["finished_goods"]}
+    fgs = sorted(plan) or sorted(f for f in model["roots"] if f not in model["fg_blocked"])
+    per_fg, missing_all = [], set()
+    for fg in fgs:
+        pu, pu0 = per_unit(model, fg), per_unit(model, fg, use_scrap=False)
+        lines, total, total0, missing = [], 0.0, 0.0, []
+        for m in _fg_leaves(model, fg):
+            c = prices.get(m, {}).get("unit_cost")
+            if c is None:
+                missing.append(m)
+                continue
+            v, v0 = pu[m] * c, pu0[m] * c
+            total += v
+            total0 += v0
+            lines.append({"part": m, "qty_per_unit": pu[m], "unit_cost": c,
+                          "cost": v, "cost_no_scrap": v0, "scrap_cost": v - v0})
+        lines.sort(key=lambda x: (-x["cost"], x["part"]))
+        missing_all.update(missing)
+        price = prices.get(fg, {}).get("selling_price")
+        q = plan.get(fg, 0)
+        per_fg.append({"fg": fg, "unit_cost": total, "material_cost_no_scrap": total0,
+                       "scrap_cost": total - total0, "missing_costs": missing, "complete": not missing,
+                       "selling_price": price,
+                       "margin": (price - total) if (price is not None and not missing) else None,
+                       "planned": q, "plan_cost": total * q, "lines": lines})
+    shortfall_cost, shortfall_lines = 0.0, []
+    for r in feas["materials"]:
+        if r["shortfall"]:
+            c = prices.get(r["part"], {}).get("unit_cost")
+            shortfall_lines.append({"part": r["part"], "shortfall": r["shortfall"], "unit_cost": c,
+                                    "first_short_week": r["first_short_week"],
+                                    "cost": r["shortfall"] * c if c is not None else None})
+            if c is not None:
+                shortfall_cost += r["shortfall"] * c
+    at_risk = None
+    if plan and feas["feasible"] is not None:
+        units = {r["fg"]: r["unmet"] for r in feas["finished_goods"]}
+        have = all(prices.get(f, {}).get("selling_price") is not None for f in units)
+        late_units = sum(t["late_filled"] for t in feas["weeks"])
+        at_risk = {"units": units, "units_total": sum(units.values()), "late_units": late_units,
+                   "dollars": sum(units[f] * prices[f]["selling_price"] for f in units) if have else None}
+    plan_cost = sum(x["plan_cost"] for x in per_fg)
+    plan_scrap = sum(x["scrap_cost"] * x["planned"] for x in per_fg)
+    if not per_fg:
+        answer = "No finished goods to cost yet."
+    elif missing_all:
+        answer = "Partial: unit cost missing for %d materials." % len(missing_all)
+    elif plan:
+        answer = "The %d-week plan uses $%s of materials, including $%s of scrap." % (
+            HORIZON, format(round(plan_cost), ","), format(round(plan_scrap), ","))
+    else:
+        answer = "Unit material costs calculated for %d finished goods." % len(per_fg)
+    return {"answer": answer, "per_fg": per_fg, "plan_cost": plan_cost, "plan_scrap_cost": plan_scrap,
+            "shortfall_cost": shortfall_cost, "shortfall_lines": shortfall_lines,
+            "missing_costs": sorted(missing_all), "at_risk": at_risk}
+
+
+# ---------------------------------------------------------------------------
+# 10. Readiness
+# ---------------------------------------------------------------------------
+
+def readiness(model, ti, feas):
+    out = {}
+    blocked = None
+    if model["graph"].number_of_edges() == 0:
+        blocked = {"status": "blocked", "missing": [{"what": "BOM lines", "parts": []}],
+                   "message": "Load at least one BOM tab and confirm its column mapping."}
+    elif model["cycles"]:
+        blocked = {"status": "blocked", "missing": [{"what": "Fix loops in the BOM", "parts": []}],
+                   "message": "The BOM contains a loop, so no quantities can be calculated."}
+    for mod in ("feasibility", "cost"):
+        if blocked:
+            out[mod] = blocked
+            continue
+        missing = []
+        dem_fgs = [r["fg"] for r in feas["finished_goods"]] if feas else []
+        bad = sorted(f for f in dem_fgs if f in model["fg_blocked"])
+        if model["fg_blocked"]:
+            missing.append({"what": "Fix data errors for " + ", ".join(sorted(model["fg_blocked"])),
+                            "parts": sorted({p for v in model["fg_blocked"].values() for p in v})})
+        if feas and not dem_fgs:
+            missing.append({"what": "Weekly demand for at least one finished good", "parts": [],
+                            "field": "demand"})
+        if mod == "feasibility" and feas and feas["unknown_stock"]:
+            missing.append({"what": "Available stock for %d of %d raw materials"
+                            % (len(feas["unknown_stock"]), len(feas["materials"])),
+                            "parts": feas["unknown_stock"], "field": "available"})
+        if mod == "cost" and feas:
+            c = cost(model, feas)
+            n = len({m for x in c["per_fg"] for m in _fg_leaves(model, x["fg"])})
+            if c["missing_costs"]:
+                missing.append({"what": "Unit cost for %d of %d raw materials" % (len(c["missing_costs"]), n),
+                                "parts": c["missing_costs"], "field": "unit_cost"})
+            np_ = [x["fg"] for x in c["per_fg"] if x["selling_price"] is None]
+            if np_:
+                missing.append({"what": "Selling price for %d finished goods (needed for revenue at risk)"
+                                % len(np_), "parts": np_, "field": "selling_price"})
+        out[mod] = {"status": "partial" if missing else "ready", "missing": missing,
+                    "message": "; ".join(m["what"] for m in missing)}
+    return out
+
+
+# ---------------------------------------------------------------------------
+# 11. Public API
+# ---------------------------------------------------------------------------
+
+def _loads(s):
+    """Objects arrive as JSON text from JavaScript; plain IDs arrive as strings."""
+    if isinstance(s, str) and s[:1] in ("{", "["):
+        return json.loads(s)
+    return s
+
+
+def _issue_summary(model):
+    c = Counter(i["severity"] for i in model["issues"])
+    return {"errors": c.get("error", 0), "warnings": c.get("warning", 0), "info": c.get("info", 0)}
+
+
+_ANALYZE_CACHE = {}
+
+
+def analyze(state):
+    """Results are pure functions of the inputs, so they are cached per input."""
+    state = _loads(state)
+    model = get_model(state)
+    ov = state.get("overrides") or {}
+    key = json.dumps([ov.get("demand"), ov.get("receipts")], sort_keys=True, default=str)
+    if _ANALYZE_CACHE.get("model") is not model:
+        _ANALYZE_CACHE.clear()
+        _ANALYZE_CACHE["model"] = model
+    if key not in _ANALYZE_CACHE:
+        _ANALYZE_CACHE[key] = _analyze(state, model)
+    return _ANALYZE_CACHE[key]
+
+
+def _analyze(state, model):
+    out = {"engine": ENGINE_VERSION, "horizon": HORIZON, "issues": model["issues"],
+           "issue_summary": _issue_summary(model), "finished_goods": model["roots"],
+           "raw_materials": model["leaves"], "part_count": model["graph"].number_of_nodes(),
+           "line_count": model["line_count"], "edge_count": model["graph"].number_of_edges(),
+           "fg_blocked": model["fg_blocked"], "parts": model["parts"], "prices": model["prices"],
+           "inventory": model["inventory"]}
+    if model["cycles"] or model["graph"].number_of_edges() == 0:
+        out["readiness"] = readiness(model, None, None)
+        out["blocked"] = True
+        return out
+    ti = time_inputs(state, model)
+    feas = feasibility(model, ti)
+    out.update({"weeks": ti["labels"], "demand": ti["demand"], "receipts": ti["receipts"],
+                "time_notes": ti["notes"], "has_demand_tab": ti["has_demand_tab"],
+                "has_receipts_tab": ti["has_receipts_tab"], "feasibility": feas,
+                "cost": cost(model, feas), "readiness": readiness(model, ti, feas), "blocked": False})
+    return out
+
+
+def _plan_totals(state, model):
+    a = analyze(state)
+    return {r["fg"]: r["demand"] for r in (a.get("feasibility") or {}).get("finished_goods", [])}
+
+
+def trace(state, material):
+    """The arithmetic behind one material's requirement over the horizon, path by path."""
+    state = _loads(state)
+    model = get_model(state)
+    g = model["graph"]
+    material = normalize_id(material)
+    plan = _plan_totals(state, model)
+    paths, total, n_paths = [], 0.0, 0
+    for fg in sorted(plan):
+        if not plan[fg] or material not in g or material not in model["desc"].get(fg, ()):
+            continue
+        total += plan[fg] * per_unit(model, fg).get(material, 0.0)
+        cnt = {fg: 1}
+        for node in nx.topological_sort(g.subgraph(model["desc"][fg] | {fg})):
+            for c in g.successors(node):
+                cnt[c] = cnt.get(c, 0) + cnt.get(node, 0)
+        n_paths += cnt.get(material, 0)
+        for p in nx.all_simple_paths(g, fg, material):
+            if len(paths) >= 25:
+                break
+            steps, prod = [], 1.0
+            for a, b in zip(p, p[1:]):
+                e = g.edges[a, b]
+                steps.append({"parent": a, "child": b, "qty_per": e["qty_per"], "uom": e["uom"],
+                              "conversion": e["conv_used"], "scrap": e["scrap"], "ratio": e["ratio"],
+                              "source": e["source"], "row": e["row"]})
+                prod *= e["ratio"]
+            paths.append({"fg": fg, "fg_qty": plan[fg], "steps": steps, "result": plan[fg] * prod})
+    weekly = next((r for r in analyze(state)["feasibility"]["materials"] if r["part"] == material), None)
+    return {"material": material, "uom": model["base_uom"].get(material, ""), "total": total,
+            "paths": paths, "path_count": n_paths, "truncated": n_paths > len(paths), "weekly": weekly}
+
+
+def where_used(state, part):
+    state = _loads(state)
+    model = get_model(state)
+    g = model["graph"]
+    part = normalize_id(part)
+    if part not in g:
+        return {"part": part, "found": False}
+    anc = nx.ancestors(g, part)
+    return {"part": part, "found": True, "finished_goods": sorted(a for a in anc if a in model["roots"]),
+            "assemblies": sorted(a for a in anc if a not in model["roots"]),
+            "components": sorted(nx.descendants(g, part))}
+
+
+def graph_data(state, fg=None):
+    """Nodes, edges, the structure tree for one finished good, and Sankey links (by cost)."""
+    state = _loads(state)
+    model = get_model(state)
+    g = model["graph"]
+    if model["cycles"]:
+        return {"nodes": [], "edges": [], "trees": {}, "sankey": None}
+    a = analyze(state)
+    plan = _plan_totals(state, model)
+    status = {r["part"]: r["overall"] for r in (a.get("feasibility") or {}).get("materials", [])}
+    depth = {}
+    for n in nx.topological_sort(g):
+        preds = list(g.predecessors(n))
+        depth[n] = 0 if not preds else max(depth[p] + 1 for p in preds)
+    req = explode(model, {f: q for f, q in plan.items() if q})
+    nodes = []
+    for n in sorted(g.nodes):
+        kind = "fg" if n in model["roots"] else ("raw" if g.out_degree(n) == 0 else "assembly")
+        nodes.append({"id": n, "kind": kind, "level": depth.get(n, 0),
+                      "description": model["parts"].get(n, {}).get("description", ""),
+                      "status": status.get(n, "none"), "required": req.get(n, 0.0),
+                      "blocked": n in model["fg_blocked"]})
+    edges = [{"source": u, "target": v, "qty_per": d["qty_per"], "ratio": d["ratio"],
+              "uom": d["uom"], "scrap": d["scrap"]} for u, v, d in sorted(g.edges(data=True))]
+
+    # Each assembly is expanded once per tree; later uses show as a "see above" leaf.
+    def build_tree(root):
+        expanded, count = set(), [0]
+
+        def tree(n, mult):
+            count[0] += 1
+            node = {"name": n, "qty": mult, "status": status.get(n, "none"),
+                    "description": model["parts"].get(n, {}).get("description", ""), "children": []}
+            if g.out_degree(n) and (n in expanded or count[0] > 1500):
+                node["repeat"] = True
+                return node
+            expanded.add(n)
+            for c in sorted(g.successors(n)):
+                node["children"].append(tree(c, mult * g.edges[n, c]["ratio"]))
+            return node
+        return tree(root, plan.get(root) or 1.0)
+
+    tree_fg = fg if fg in model["roots"] else (model["roots"][0] if model["roots"] else None)
+    trees = {tree_fg: build_tree(tree_fg)} if tree_fg else {}
+
+    # Sankey in dollars; unknown unit costs count as 0 and the view is marked partial.
+    prices = model["prices"]
+    rolled, partial = {}, False
+    for n in reversed(list(nx.topological_sort(g))):
+        if g.out_degree(n) == 0:
+            c = prices.get(n, {}).get("unit_cost")
+            rolled[n] = c if c is not None else 0.0
+        else:
+            rolled[n] = sum(g.edges[n, c]["ratio"] * rolled[c] for c in g.successors(n))
+    edge_flow = defaultdict(float)
+    for f, q in plan.items():
+        if not q or f in model["fg_blocked"]:
+            continue
+        pu = per_unit(model, f)
+        for u, v in g.subgraph(model["desc"][f] | {f}).edges:
+            edge_flow[(u, v)] += q * pu.get(u, 0.0) * g.edges[u, v]["ratio"]
+    links = []
+    for (u, v), units in sorted(edge_flow.items()):
+        if g.out_degree(v) == 0 and "unit_cost" not in prices.get(v, {}):
+            partial = True
+        if units * rolled.get(v, 0.0) > 0:
+            links.append({"source": v, "target": u, "value": units * rolled[v]})
+    return {"nodes": nodes, "edges": edges, "trees": trees,
+            "sankey": {"links": links, "partial": partial}, "plan": plan}
+
+
+def api(fn, *args):
+    """Single JSON entry point used from JavaScript: api('analyze', state)."""
+    funcs = {"propose_mapping": propose_mapping, "map_columns": map_columns, "schema": schema,
+             "analyze": analyze, "trace": trace, "where_used": where_used, "graph_data": graph_data}
+    try:
+        args = [_loads(a) for a in args]
+        return json.dumps({"ok": True, "result": funcs[fn](*args)}, default=_json_default)
+    except Exception as exc:  # surfaced in the UI, never swallowed
+        import traceback
+        return json.dumps({"ok": False, "error": "%s: %s" % (type(exc).__name__, exc),
+                           "trace": traceback.format_exc()})
+
+
+def _json_default(o):
+    if isinstance(o, set):
+        return sorted(o)
+    return str(o)
+</script>
+<script id="demo-data" type="application/json">{"tabs": [{"id": "t1", "file": "demo_bom.xlsx", "sheet": "IP-100 BOM", "headers": ["Parent Material", "Component", "Qty Per", "UoM", "Scrap %"], "rows": [["IP-100", "HSG-110", 1, "EA", null], ["IP-100", "PCB-200", 1, "EA", null], ["IP-100", "BAT-300", 1, "EA", null], ["IP-100", "DSP-400", 1, "EA", null], ["IP-100", "MTR-120", 1, "EA", null], ["IP-100", "FAS-900", 1, "EA", null], ["HSG-110", "RES-01", 0.45, "KG", 4], ["HSG-110", "GSK-02", 2, "EA", null], ["HSG-110", "LBL-03", 1, "EA", null], ["MTR-120", "MAG-04", 4, "EA", 2], ["MTR-120", "CU-05", 12, "M", 3], ["MTR-120", "SHF-06", 1, "EA", null]]}, {"id": "t2", "file": "demo_bom.xlsx", "sheet": "Shared Assemblies", "headers": ["Assembly", "Child Part", "Quantity", "Unit", "Yield"], "rows": [["PCB-200", "PCB-BLANK-07", 1, "EA", 97], ["PCB-200", "MCU-08", 1, "EA", null], ["PCB-200", "CAP-09", 24, "EA", null], ["PCB-200", "RES-10", 40, "EA", null], ["PCB-200", "SLD-11", 12, "G", 95], ["BAT-300", "CEL-12", 2, "EA", null], ["BAT-300", "BMS-13", 1, "EA", null], ["BAT-300", "WIR-14", 1, "EA", null], ["DSP-400", "LCD-15", 1, "EA", null], ["DSP-400", "GLS-16", 1, "EA", 98], ["DSP-400", "FPC-17", 1, "EA", null], ["DSP-400", "GLS-16", 1, "EA", 98]]}, {"id": "t3", "file": "demo_bom.xlsx", "sheet": "GM-200", "headers": ["Assembly ID", "Component ID", "Qty per", "UOM", "Scrap factor"], "rows": [["GM-200", "HSG-210", 1, "EA", null], ["GM-200", "PCB200", 1, "EA", null], ["GM-200", "BAT-310", 1, "EA", null], ["GM-200", "DSP-400", 1, "EA", null], ["GM-200", "STR-220", 1, "EA", null], ["HSG-210", "RES-01", 0.12, "KG", 1.04], ["HSG-210", "LBL-03", null, "EA", null], ["BAT-310", "CEL-18", 1, "EA", null], ["BAT-310", "SPR-19", 2, "EA", null], ["STR-220", "GLD-20", 2, "EA", null], ["STR-220", "RES-01", 0.02, "KG", null], ["FPC-17", "DSP-400", 1, "EA", null]]}, {"id": "t4", "file": "demo_bom.xlsx", "sheet": "PO-300 (SAP CS12)", "headers": ["Level", "Material", "Description", "Comp. Qty", "Un"], "rows": [[".1", "HSG-310", "Oximeter Housing Assy", 1, "EA"], ["..2", "res-01 ", "ABS Resin", 0.08, "KG"], ["..2", "GSK-02", "Silicone Gasket", 1, "EA"], [".1", "PCB-200 ", "Main Control Board", 1, "EA"], [".1", "SEN-320", "Sensor Clip Assy", 1, "EA"], ["..2", "LED-21", "Red/IR LED", 2, "EA"], ["..2", "PDT-22", "Photodiode", 1, "EA"], ["..2", "SIL-23", "Silicone Pad Compound", 0.01, "KG"], [".1", "DSP-400", "Display Module", 1, "EA"], [".1", "BAT-310", "Coin Cell Holder Assy", 1, "EA"]]}, {"id": "t5", "file": "demo_bom.xlsx", "sheet": "Stock (MB52)", "headers": ["Material", "Unrestricted", "Base Unit of Measure"], "rows": [["FAS-900", 1000, "EA"], ["RES-01", 600, "KG"], ["GSK-02", 2500, "EA"], ["LBL-03", 4000, "EA"], ["MAG-04", 2000, "EA"], ["CU-05", 6000, "M"], ["SHF-06", 420, "EA"], ["PCB-BLANK-07", 3500, "EA"], ["MCU08", 1200, "EA"], ["CAP-09", 80000, "EA"], ["RES-10", 250000, "EA"], ["SLD-11", 50, "KG"], ["CEL-12", 1200, "EA"], ["BMS-13", 500, "EA"], ["WIR-14", 450, "EA"], ["LCD-15", 3000, "EA"], ["GLS-16", 3200, "EA"], ["FPC-17", 2900, "EA"], ["CEL-18", 3000, "EA"], ["SPR-19", 6000, "EA"], ["GLD-20", 3600, "EA"], ["LED-21", 2000, "EA"], ["PDT-22", 1000, "EA"], ["SIL-23", 15, "KG"]]}, {"id": "t6", "file": "demo_bom.xlsx", "sheet": "Costs", "headers": ["Material No.", "Std Cost", "Sales Price"], "rows": [["IP-100", null, 1450], ["GM-200", null, 39], ["PO-300", null, 59], ["FAS-900", 0.95, null], ["RES-01", 2.4, null], ["GSK-02", 0.35, null], ["LBL-03", 0.12, null], ["MAG-04", 1.1, null], ["CU-05", 0.18, null], ["SHF-06", 2.75, null], ["PCB-BLANK-07", 4.2, null], ["MCU-08", 6.8, null], ["CAP-09", 0.02, null], ["RES-10", 0.01, null], ["SLD-11", 85.0, null], ["CEL-12", 3.9, null], ["WIR-14", 1.6, null], ["LCD-15", 18.5, null], ["GLS-16", 3.2, null], ["FPC-17", 1.4, null], ["CEL-18", 0.45, null], ["LED-21", 0.3, null], ["PDT-22", 0.55, null]]}, {"id": "t7", "file": "demo_bom.xlsx", "sheet": "Demand Plan (4 wk)", "headers": ["Part", "W1", "W2", "W3", "W4"], "rows": [["IP-100", 100, 100, 100, 100], ["GM-200", 350, 400, 375, 375], ["PO-300", 200, 250, 225, 225]]}, {"id": "t8", "file": "demo_bom.xlsx", "sheet": "Open POs (ME2M)", "headers": ["Material", "PO Number", "Delivery Week", "PO Qty"], "rows": [["MCU-08", "4500012871", "W3", 1500], ["LCD-15", "4500012904", "W2", 500], ["CEL-18", "4500012933", 4, 1000]]}, {"id": "t9", "file": "demo_bom.xlsx", "sheet": "Item Master", "headers": ["Part Number", "Description", "Type"], "rows": [["IP-100", "Infusion Pump", "FG"], ["GM-200", "Glucose Meter", "FG"], ["PO-300", "Pulse Oximeter", "FG"], ["HSG-110", "Pump Housing Assy", "ASSY"], ["MTR-120", "Pump Motor Assy", "ASSY"], ["PCB-200", "Main Control Board", "ASSY"], ["BAT-300", "Li-ion Battery Pack", "ASSY"], ["DSP-400", "Display Module", "ASSY"], ["HSG-210", "Meter Housing Assy", "ASSY"], ["BAT-310", "Coin Cell Holder Assy", "ASSY"], ["STR-220", "Test Strip Port Assy", "ASSY"], ["HSG-310", "Oximeter Housing Assy", "ASSY"], ["SEN-320", "Sensor Clip Assy", "ASSY"], ["FAS-900", "Fastener Kit", "RAW"], ["RES-01", "ABS Resin", "RAW"], ["GSK-02", "Silicone Gasket", "RAW"], ["LBL-03", "Label Set", "RAW"], ["MAG-04", "Neodymium Magnet", "RAW"], ["CU-05", "Copper Magnet Wire", "RAW"], ["SHF-06", "Steel Shaft", "RAW"], ["PCB-BLANK-07", "Bare Circuit Board", "RAW"], ["MCU-08", "Microcontroller", "RAW"], ["CAP-09", "Capacitor 0402", "RAW"], ["RES-10", "Resistor 0402", "RAW"], ["SLD-11", "Solder Paste", "RAW"], ["CEL-12", "Li-ion Cell 18650", "RAW"], ["BMS-13", "Battery Management IC", "RAW"], ["WIR-14", "Wire Harness", "RAW"], ["LCD-15", "LCD Panel 3.5in", "RAW"], ["GLS-16", "Cover Glass", "RAW"], ["FPC-17", "Flex Cable", "RAW"], ["CEL-18", "Coin Cell CR2032", "RAW"], ["SPR-19", "Contact Spring", "RAW"], ["GLD-20", "Gold Contact", "RAW"], ["LED-21", "Red/IR LED", "RAW"], ["PDT-22", "Photodiode", "RAW"], ["SIL-23", "Silicone Pad Compound", "RAW"]]}]}</script>
+<script>
+"use strict";
+/* ======================================================================
+   BOM Gap Analyzer: interface layer.
+   All calculations happen in the Python engine (Pyodide). This file only
+   collects inputs, calls engine.api(...) and draws the results.
+   ====================================================================== */
+const APP_ID = "bom-gap-analyzer", FILE_VERSION = 2;
+const PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/";
+const COLORS = {red:"#D64545", amber:"#D99A00", green:"#2E9E6B", unknown:"#A0AAB8", none:"#A0AAB8",
+  accent:"#2457D6", ink:"#14213D", ink2:"#4A5568", grid:"#E3E8EF", fg:"#2457D6", assembly:"#6B7A99", raw:"#2E9E6B"};
+const STATUS_LABEL = {red:"Short", amber:"Tight", green:"Covered", unknown:"No stock data", none:"–"};
+const FIELD_LABEL = {parent:"Parent part", child:"Child part", part_id:"Part", qty_per:"Quantity per",
+  child_uom:"Unit", uom:"Unit", scrap_factor:"Scrap factor (×)", scrap_pct:"Scrap %", yield_pct:"Yield %",
+  uom_conversion:"Unit conversion", level:"Level", available_qty:"Available qty", unit_cost:"Unit cost",
+  selling_price:"Selling price", description:"Description", part_type:"Type", base_uom:"Base unit",
+  week:"Week or date", demand_qty:"Demand qty", receipt_qty:"Receipt qty"};
+const KIND_LABEL = {bom:"BOM (parent / child)", indented:"Indented BOM (levels)", inventory:"Available stock",
+  prices:"Costs and prices", parts:"Part master", demand:"Weekly demand", receipts:"Scheduled receipts (POs)",
+  ignore:"Ignore this tab"};
+
+const S = { state:null, result:null, graph:null, page:"data", engine:null, py:null,
+  solver:"loading", fileHandle:null, savedAt:null, autosavedAt:null, autosaveOk:true, dirty:false,
+  briefing:[], charts:[], cy:null, schema:null, ui:{sort:{}, filter:{}, colmenu:null, explorerFg:null, explorerView:"tree",
+  costFg:null, treeOrient:"TB", mapOpen:false, weeklyFg:"__all", balanceMat:null, heatAll:false} };
+
+function newState(){
+  return {app:APP_ID, version:FILE_VERSION, name:"Untitled project", tabs:[], mappings:{},
+    fixes:{aliases:{}, conversions:{}, qty:{}, excluded:[], duplicates:{}},
+    overrides:{available:{}, unit_cost:{}, selling_price:{}, demand:{}, receipts:{}},
+    settings:{decimals:2, columns:{}}};
+}
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dec = () => S.state?.settings?.decimals ?? 2;
+function fmt(v, d = dec()){ if(v===null||v===undefined||Number.isNaN(v)) return "–";
+  return Number(v).toLocaleString(undefined,{maximumFractionDigits:d}); }
+function fmtInt(v){ return v==null ? "–" : Math.round(v).toLocaleString(); }
+function fmtPct(v){ return v==null ? "–" : (v*100).toLocaleString(undefined,{maximumFractionDigits:1})+"%"; }
+function money(v, d = 0){ if(v==null) return "–"; const s = Math.abs(v).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}); return (v<0?"-$":"$")+s; }
+function moneyShort(v){ if(v==null) return "–"; const a=Math.abs(v); if(a>=1e6) return "$"+(v/1e6).toFixed(2)+"M"; if(a>=1e4) return "$"+(v/1e3).toFixed(1)+"K"; return money(v, a<100?2:0); }
+function desc(p){ return S.result?.parts?.[p]?.description || ""; }
+function plabel(p){ const d = desc(p); return d ? `${p} · ${d}` : p; }
+function toast(msg, ms = 2600){ const t = document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(), ms); }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function sources(){ return [...new Set(S.state.tabs.map(t=>t.file))].join(", ") || "none"; }
+
+/* ---------- engine bridge ---------- */
+function call(fn, ...args){
+  if(!S.engine) throw new Error("Engine not ready");
+  const a = args.map(x => typeof x === "string" ? x : JSON.stringify(x));
+  const out = JSON.parse(S.engine.api(fn, ...a));
+  if(!out.ok){ console.error(out.trace); throw new Error(out.error); }
+  return out.result;
+}
+
+async function boot(){
+  const bar = $("#splash-bar"), msg = $("#splash-msg");
+  const step = (p, m) => { bar.style.width = p + "%"; msg.textContent = m; };
+  try{
+    if(typeof loadPyodide !== "function" || typeof echarts === "undefined" || typeof XLSX === "undefined")
+      throw new Error("libraries");
+    step(15, "Loading the Python runtime (first open takes a few seconds)");
+    S.py = await loadPyodide({indexURL: PYODIDE_URL});
+    step(60, "Loading NetworkX");
+    // Load the NetworkX wheel directly so Pyodide does not pull in matplotlib.
+    await S.py.loadPackage(PYODIDE_URL + "networkx-3.4.2-py3-none-any.whl");
+    step(85, "Starting the calculation engine");
+    S.py.FS.writeFile("/home/pyodide/engine.py", $("#engine-src").textContent);
+    S.engine = S.py.pyimport("engine");
+    S.schema = call("schema");
+    step(100, "Ready");
+  }catch(err){
+    console.error(err);
+    $("#splash").innerHTML = `<div class="box"><div class="kicker">Can't start</div><h2>The calculation engine didn't load</h2>
+      <p class="muted">This tool downloads its Python engine and chart libraries from public CDNs the first time it opens, so it needs an internet connection. Corporate networks sometimes block <b>cdn.jsdelivr.net</b>. Check your connection, then reload.</p>
+      <p class="muted small">Details: ${esc(err.message||err)}</p><button class="btn primary" onclick="location.reload()">Reload</button></div>`;
+    return;
+  }
+  setPill("engine-pill","warn","Solver loading");
+  const restored = await restoreAutosave();
+  if(!restored) S.state = newState();
+  $("#splash").remove();
+  recompute(); render();
+  if(restored) toast("Restored your last session");
+  loadSolver();
+}
+
+async function loadSolver(){
+  // loadPackage logs failures instead of throwing, so confirm the import really works.
+  try{ await S.py.loadPackage("scipy"); S.py.runPython("import scipy.optimize"); S.solver = "ready"; setPill("engine-pill","ok","Engine ready");
+    recompute(); render(); }
+  catch(e){ console.warn("SciPy unavailable", e); S.solver = "greedy";
+    setPill("engine-pill","warn","Solver unavailable"); }
+}
+
+function setPill(id, cls, text){ const p = document.getElementById(id); p.className = "pill " + cls; p.lastElementChild.textContent = text; }
+
+/* ---------- state changes ---------- */
+function recompute(){
+  S.result = null; S.graph = null;
+  if(!S.state.tabs.length) return;
+  try{ S.result = call("analyze", S.state); }catch(e){ S.result = {error: e.message}; }
+}
+function mutate(fn, {silent=false} = {}){
+  fn(S.state); S.dirty = true; scheduleAutosave(); recompute(); if(!silent) render();
+}
+
+/* ---------- persistence ---------- */
+const IDB_NAME = "bom-gap-analyzer", IDB_STORE = "kv", IDB_KEY = "autosave";
+function idb(){ return new Promise((res, rej) => { const r = indexedDB.open(IDB_NAME, 1);
+  r.onupgradeneeded = () => r.result.createObjectStore(IDB_STORE); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+async function idbSet(v, key = IDB_KEY){ const db = await idb(); return new Promise((res, rej) => { const tx = db.transaction(IDB_STORE,"readwrite"); tx.objectStore(IDB_STORE).put(v, key); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+async function idbGet(key = IDB_KEY){ const db = await idb(); return new Promise((res, rej) => { const tx = db.transaction(IDB_STORE,"readonly"); const q = tx.objectStore(IDB_STORE).get(key); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); }
+let autosaveTimer = null;
+function scheduleAutosave(){ clearTimeout(autosaveTimer); autosaveTimer = setTimeout(async () => {
+  try{ await idbSet(JSON.stringify(S.state)); S.autosaveOk = true; S.autosavedAt = new Date(); }
+  catch(e){ S.autosaveOk = false; }
+  updateSavePill(); }, 700); updateSavePill(); }
+async function restoreAutosave(){ try{ const v = await idbGet(); if(!v) return false; const st = JSON.parse(v);
+  if(st.app !== APP_ID) return false; S.state = migrate(st);
+  try{ S.fileHandle = (await idbGet("handle")) || null; }catch(e){ S.fileHandle = null; }
+  return true; }catch(e){ S.autosaveOk = false; return false; } }
+function migrate(st){ const base = newState();
+  // Version 1 projects carried scenarios; version 2 plans from the weekly demand signal instead.
+  const {scenarios, activeScenario, compareIds, ...rest} = st;
+  return Object.assign(base, rest, {version:FILE_VERSION, fixes:Object.assign(base.fixes, st.fixes||{}),
+    overrides:Object.assign(base.overrides, st.overrides||{}), settings:Object.assign(base.settings, st.settings||{})}); }
+function updateSavePill(){
+  if(S.savedAt && !S.dirty) return setPill("save-pill","ok","Saved to file " + S.savedAt.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}));
+  if(!S.autosaveOk) return setPill("save-pill","bad","Autosave off: save to file");
+  if(S.autosavedAt) return setPill("save-pill", S.dirty && S.fileHandle ? "warn":"ok", (S.fileHandle && S.dirty ? "Unsaved changes · " : "") + "Autosaved " + S.autosavedAt.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}));
+  setPill("save-pill","", "Not saved");
+}
+function projectBlob(){ return new Blob([JSON.stringify({app:APP_ID, version:FILE_VERSION, savedAt:new Date().toISOString(),
+  note:"Inputs only. Results are recalculated when the file opens.", state:S.state}, null, 1)], {type:"application/json"}); }
+function fileName(){ return (S.state.name || "project").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-") + ".bomproject.json"; }
+async function saveProject(as = false){
+  try{
+    if(window.showSaveFilePicker){
+      if(S.fileHandle && !as && S.fileHandle.requestPermission && (await S.fileHandle.requestPermission({mode:"readwrite"})) !== "granted") S.fileHandle = null;
+      if(!S.fileHandle || as) S.fileHandle = await showSaveFilePicker({suggestedName:fileName(), types:[{description:"BOM project", accept:{"application/json":[".json"]}}]});
+      idbSet(S.fileHandle, "handle").catch(() => {});
+      const w = await S.fileHandle.createWritable(); await w.write(projectBlob()); await w.close();
+    } else { downloadBlob(projectBlob(), fileName()); }
+    S.savedAt = new Date(); S.dirty = false; updateSavePill(); toast("Project saved");
+  }catch(e){ if(e.name !== "AbortError") toast("Couldn't save: " + e.message); }
+}
+async function openProject(){
+  try{
+    if(window.showOpenFilePicker){
+      const [h] = await showOpenFilePicker({types:[{description:"BOM project", accept:{"application/json":[".json",".bomproject"]}}]});
+      await loadProjectText(await (await h.getFile()).text(), h);
+    } else $("#project-input").click();
+  }catch(e){ if(e.name !== "AbortError") toast("Couldn't open: " + e.message); }
+}
+async function loadProjectText(text, handle = null){
+  let obj; try{ obj = JSON.parse(text); }catch(e){ return toast("That file isn't a project file."); }
+  if(obj.app !== APP_ID || !obj.state) return toast("That file isn't a BOM Gap Analyzer project.");
+  S.state = migrate(obj.state); S.fileHandle = handle; idbSet(handle, "handle").catch(() => {}); S.savedAt = new Date(); S.dirty = false; S.briefing = [];
+  scheduleAutosave(); recompute(); render(); updateSavePill(); toast("Opened " + (S.state.name || "project"));
+}
+function downloadBlob(blob, name){ const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 2000); }
+window.addEventListener("beforeunload", e => { if(S.dirty && !S.autosaveOk){ e.preventDefault(); e.returnValue = ""; } });
+
+/* ---------- loading Excel ---------- */
+async function addFiles(files){
+  let added = 0;
+  for(const f of files){
+    try{
+      const buf = await f.arrayBuffer();
+      const wb = XLSX.read(buf, {type:"array", cellDates:false});
+      for(const sheet of wb.SheetNames){
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheet], {header:1, defval:null, raw:true, blankrows:false});
+        const hi = rows.findIndex(r => r.filter(v => v !== null && v !== "").length >= 2);
+        if(hi < 0) continue;
+        let headers = rows[hi].map((h,i) => h==null || h==="" ? `Column ${i+1}` : String(h).trim());
+        const seen = {}; headers = headers.map(h => seen[h] ? `${h} (${++seen[h]})` : (seen[h]=1, h));
+        const data = rows.slice(hi+1).filter(r => r.some(v => v !== null && v !== ""));
+        upsertTab({file:f.name, sheet, headers, rows:data}); added++;
+      }
+    }catch(e){ toast(`Couldn't read ${f.name}: ${e.message}`); }
+  }
+  if(added){ S.dirty = true; scheduleAutosave(); recompute(); render(); toast(`Loaded ${added} tab${added>1?"s":""}. Check the column mapping below.`); }
+}
+function upsertTab(t){
+  const st = S.state, ex = st.tabs.find(x => x.file === t.file && x.sheet === t.sheet);
+  if(ex){ const same = JSON.stringify(ex.headers) === JSON.stringify(t.headers); Object.assign(ex, t, {id:ex.id});
+    if(!same) st.mappings[ex.id] = call("propose_mapping", ex); return; }
+  const n = st.tabs.reduce((m,x) => Math.max(m, +String(x.id).replace(/\D/g,"") || 0), 0) + 1;
+  const tab = Object.assign({id:"t"+n}, t); st.tabs.push(tab); st.mappings[tab.id] = call("propose_mapping", tab);
+}
+function loadDemo(){
+  const demo = JSON.parse($("#demo-data").textContent);
+  S.state = newState(); S.state.name = "Demo: medical device line"; S.fileHandle = null; idbSet(null, "handle").catch(() => {}); S.savedAt = null; S.briefing = [];
+  for(const t of demo.tabs){ S.state.tabs.push(t); S.state.mappings[t.id] = call("propose_mapping", t); }
+  S.dirty = true; scheduleAutosave(); recompute(); S.page = "data"; render();
+  toast("Demo loaded. Fix the flagged data issues to unlock the analysis.", 3800);
+}
+
+/* ---------- navigation and shell ---------- */
+const PAGES = [["data","Data","M3 4h10M3 8h10M3 12h6"],["feasibility","Feasibility","M3 8.5l3 3 7-7"],
+  ["cost","Cost","M8 2v12M11 5H6.5a2 2 0 000 4h3a2 2 0 010 4H4"],
+  ["briefing","Briefing","M3 3h10v10H3zM6 6h4M6 9h4"]];
+function renderNav(){
+  const r = S.result, errs = r?.issue_summary?.errors || 0;
+  $("#nav").innerHTML = `<div class="lbl">Workspace</div>` + PAGES.map(([id,name,d]) => {
+    let badge = "";
+    if(id==="data" && errs) badge = `<span class="badge red">${errs}</span>`;
+    if(id==="briefing" && S.briefing.length) badge = `<span class="badge">${S.briefing.length}</span>`;
+    if(id==="feasibility" && r?.feasibility && r.feasibility.feasible===false) badge = `<span class="badge red">!</span>`;
+    return `<button class="${S.page===id?"on":""}" data-action="nav" data-page="${id}"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>${name}${badge}</button>`;
+  }).join("") + `<div class="foot">Deterministic engine v${esc(S.schema?.version||"")}. Every number is traceable to BOM lines. Decision support only; your ERP stays the system of record.</div>`;
+}
+function renderTop(){
+  $("#projname").value = S.state.name || "";
+  updateSavePill();
+}
+function disposeCharts(){ S.charts.forEach(c => c.dispose()); S.charts = []; if(S.cy){ S.cy.destroy(); S.cy = null; } }
+function chart(id, option){ const el = document.getElementById(id); if(!el) return null; const c = echarts.init(el, null, {renderer:"canvas"});
+  c.setOption(Object.assign({textStyle:{fontFamily:"Inter, system-ui, sans-serif"}, animationDuration:400}, option)); S.charts.push(c); return c; }
+window.addEventListener("resize", () => S.charts.forEach(c => c.resize()));
+
+function render(){
+  disposeCharts(); renderNav(); renderTop();
+  const m = $("#main"); const after = [];
+  const pages = {data:pageData, feasibility:pageFeasibility, cost:pageCost, briefing:pageBriefing};
+  if(!pages[S.page]) S.page = "data";
+  if(S.result?.error) m.innerHTML = `<div class="card"><h3>Something went wrong in the engine</h3><p class="muted">${esc(S.result.error)}</p><p class="small muted">Check the column mapping on the Data page. The full trace is in the browser console.</p></div>`;
+  else m.innerHTML = pages[S.page](after);
+  after.forEach(fn => fn());
+  applyFilters();
+}
+function applyFilters(){
+  document.querySelectorAll("table[data-filter-table]").forEach(t => {
+    const q = (S.ui.filter[t.dataset.filterTable] || "").trim().toLowerCase();
+    t.querySelectorAll("tbody tr").forEach(tr => { tr.style.display = !q || tr.textContent.toLowerCase().includes(q) ? "" : "none"; });
+  });
+}
+document.addEventListener("input", e => { const el = e.target.closest("[data-input='table-filter']"); if(!el) return;
+  S.ui.filter[el.dataset.table] = el.value; applyFilters(); });
+
+/* ---------- shared UI pieces ---------- */
+function head(kicker, title, sub, actions = ""){
+  return `<div class="page-head"><div><div class="kicker">${kicker}</div><h1>${title}</h1>${sub?`<div class="sub">${sub}</div>`:""}</div><div class="spacer"></div><div class="row">${actions}</div></div>`;
+}
+function emptyState(){
+  return `<div class="card empty"><div class="kicker">No data yet</div><h2>Load BOMs to get started</h2><p>Add Excel files on the Data page, or try the demo dataset.</p>
+  <div class="row" style="justify-content:center"><button class="btn primary" data-action="nav" data-page="data">Go to Data</button><button class="btn" data-action="demo">Load demo data</button></div></div>`;
+}
+function blockedState(){
+  const r = S.result;
+  const cyc = (r.issues||[]).some(i=>i.code==="cycle");
+  return `<div class="ready blocked"><b>${cyc ? "The BOM contains a loop, so no quantities can be calculated yet." : "No BOM lines yet."}</b>
+    <div>${cyc ? "Fix the loop on the Data page; the tool suggests which line to remove." : "Load a BOM tab and confirm its column mapping."}</div>
+    <div style="margin-top:8px"><button class="btn small" data-action="nav" data-page="data">Go to Data</button></div></div>`;
+}
+function guard(){ if(!S.state.tabs.length) return emptyState(); if(!S.result || S.result.blocked) return blockedState(); return null; }
+function readinessPanel(mod){
+  const rd = S.result?.readiness?.[mod]; if(!rd || rd.status === "ready") return "";
+  const items = rd.missing.map(m => {
+    const parts = m.parts?.length ? `<div class="parts">${m.parts.slice(0,12).map(esc).join(", ")}${m.parts.length>12?` and ${m.parts.length-12} more`:""}</div>` : "";
+    const btn = m.field === "demand" ? ` <button class="btn small" data-action="focus-plan">Enter demand</button>` : m.field ? ` <button class="btn small" data-action="fill" data-field="${m.field}" data-parts="${esc(JSON.stringify(m.parts))}">Enter values</button>`
+      : (m.what.startsWith("Fix data") ? ` <button class="btn small" data-action="nav" data-page="data">Fix on Data page</button>` : "");
+    return `<li>${esc(m.what)}${btn}${parts}</li>`; }).join("");
+  return `<div class="ready ${rd.status==="blocked"?"blocked":""}"><b>${rd.status==="blocked"?"Blocked":"Partial answer"}: to see the full picture, add</b><ul>${items}</ul></div>`;
+}
+function answer(tone, text, sub = ""){
+  const ico = {yes:"✓", no:"✕", partial:"!", info:"i"}[tone];
+  return `<div class="answer ${tone}"><div class="ico">${ico}</div><div><div class="big">${esc(text)}</div>${sub?`<div class="small" style="color:var(--ink2);margin-top:2px">${sub}</div>`:""}</div></div>`;
+}
+function kpi(label, value, note = "", rawValue = false){ return `<div class="card kpi"><div class="l">${esc(label)}</div><div class="v">${rawValue ? value : esc(value)}</div>${note?`<div class="n">${esc(note)}</div>`:""}</div>`; }
+function stPill(s, label){ return `<span class="st ${esc(s)}">${esc(label ?? STATUS_LABEL[s] ?? s)}</span>`; }
+function pageBtns(mod, summaryCard){ return `<button class="btn" data-action="export-xlsx" data-module="${mod}">Export to Excel</button><button class="btn primary" data-action="add-card" data-card="${summaryCard}">+ Summary to briefing</button>`; }
+/* A chart card header with its own "add to briefing" button. */
+function chartHead(title, hint, cardId, extra = ""){
+  return `<div class="tbar"><h3>${esc(title)}</h3><div class="spacer"></div>${extra}<button class="btn small" data-action="add-card" data-card="${cardId}" title="Add this chart to the briefing">+ Briefing</button></div>${hint?`<div class="hint" style="margin-bottom:6px">${hint}</div>`:""}`;
+}
+
+/* Generic table with sort and column toggles.
+   cols: [{k, label, num, fmt(row), sortv(row), hide(default hidden)}] */
+function table(id, cols, rows, {click = null, title = "", note = "", maxh = true} = {}){
+  const vis = S.state.settings.columns[id] || {};
+  const shown = cols.filter(c => vis[c.k] ?? !c.hide);
+  const sort = S.ui.sort[id];
+  let data = rows.slice();
+  if(sort){ const c = cols.find(x => x.k === sort.k); if(c){ const sv = c.sortv || (r => r[c.k]);
+    data.sort((a,b) => { const x = sv(a), y = sv(b); const r = (x==null) - (y==null) || (x<y?-1:x>y?1:0); return sort.dir * r; }); } }
+  const menu = S.ui.colmenu === id ? `<div class="pop">${cols.map(c => `<label><input type="checkbox" data-change="col-toggle" data-table="${id}" data-col="${c.k}" ${(vis[c.k] ?? !c.hide)?"checked":""}> ${esc(c.label)}</label>`).join("")}</div>` : "";
+  return `<div class="tbar">${title?`<h3>${title}</h3>`:""}${note?`<span class="hint">${note}</span>`:""}<div class="spacer"></div>
+    <input class="inp filter" style="width:170px;padding:4px 9px" placeholder="Filter rows" data-input="table-filter" data-table="${id}" value="${esc(S.ui.filter[id]||"")}">
+    <div class="colmenu"><button class="btn small" data-action="colmenu" data-table="${id}">Columns</button>${menu}</div></div>
+    <div class="${maxh?"tablewrap":""}"><table class="t" data-filter-table="${id}"><thead><tr>${shown.map(c => `<th class="${c.num?"num":""}" data-action="sort" data-table="${id}" data-col="${c.k}">${esc(c.label)}${sort?.k===c.k?(sort.dir>0?" ▲":" ▼"):""}</th>`).join("")}</tr></thead>
+    <tbody>${data.map(r => `<tr class="${click?"click":""}" ${click?`data-action="${click}" data-part="${esc(r.part||r.fg||"")}"`:""}>${shown.map(c => `<td class="${c.num?"num":""}">${c.fmt ? c.fmt(r) : esc(r[c.k])}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${shown.length}" class="muted">Nothing to show</td></tr>`}</tbody></table></div>`;
+}
+
+/* ======================================================================
+   DATA PAGE
+   ====================================================================== */
+function pageData(after){
+  const st = S.state, r = S.result;
+  const drop = `<div class="drop" id="dropzone"><div style="font-weight:600;font-size:15px">Drop Excel files here</div>
+    <div class="muted small" style="margin:4px 0 12px">BOMs (single-level or SAP-style indented), available stock, costs and prices, weekly demand, open purchase orders, part master. Any number of tabs.</div>
+    <div class="row" style="justify-content:center"><button class="btn primary" data-action="add-files">Choose files</button><button class="btn" data-action="demo">Load demo data</button></div></div>`;
+  after.push(bindDrop);
+  if(!st.tabs.length) return head("Step 1","Load your data","The tool stitches separate BOMs into one network by matching part numbers, then plans the next 4 weeks against demand.") + drop;
+  const summ = r && !r.error ? `<div class="grid g4" style="margin-bottom:14px">
+      ${kpi("Finished goods", r.finished_goods.length, r.finished_goods.slice(0,4).join(", "))}
+      ${kpi("Parts in network", r.part_count, `${r.raw_materials.length} raw materials`)}
+      ${kpi("BOM lines", r.line_count, `${r.edge_count} used after checks`)}
+      ${kpi("Data issues", `<span style="color:${r.issue_summary.errors?COLORS.red:COLORS.green}">${r.issue_summary.errors} errors</span>`, `${r.issue_summary.warnings} warnings · ${r.issue_summary.info} notes`, true)}
+    </div>` : "";
+  const needs = st.tabs.filter(t => { const m = st.mappings[t.id] || {kind:"ignore", columns:{}}; const spec = S.schema.kinds[m.kind] || {required:[]};
+    return m.kind !== "ignore" && spec.required.some(f => !m.columns[f]); }).length;
+  const kinds = {}; st.tabs.forEach(t => { const k = (st.mappings[t.id]||{}).kind || "ignore"; kinds[k] = (kinds[k]||0) + 1; });
+  const SHORT = {bom:["BOM","BOMs"], indented:["indented BOM","indented BOMs"], inventory:["stock tab","stock tabs"], prices:["cost tab","cost tabs"],
+    parts:["part master","part masters"], demand:["demand tab","demand tabs"], receipts:["PO tab","PO tabs"], ignore:["ignored","ignored"]};
+  const summary = Object.entries(kinds).map(([k,n]) => `${n} ${SHORT[k][n===1?0:1]}`).join(", ");
+  const open = S.ui.mapOpen;
+  const mapCard = `<div class="card" style="margin-top:14px"><div class="tbar collapse-h" data-action="toggle-map" style="margin-bottom:${open?10:0}px">
+      <h3><span class="caret">${open?"▾":"▸"}</span> Tabs and column mapping</h3><span class="hint">${st.tabs.length} tabs: ${esc(summary)}</span>
+      ${needs?stPill("red",`${needs} need${needs===1?"s":""} attention`):stPill("green","All mapped")}<div class="spacer"></div>
+      <button class="btn small">${open?"Collapse":"Show"}</button></div>
+    ${open ? `<div class="hint" style="margin-bottom:10px">The tool guessed what each tab holds. Check the guesses; required fields are marked with *.</div>${st.tabs.map(tabCard).join("")}<div style="margin-top:14px">${drop}</div>` : ""}</div>`;
+  return head("Step 1","Data","See the stitched BOM, fix flagged issues, then move on to the analysis.",
+      `<button class="btn" data-action="add-files">Add files</button><button class="btn" data-action="demo">Load demo data</button>`)
+    + summ + explorerCard(after) + issuesCard() + fixesCard() + mapCard;
+}
+function bindDrop(){
+  const z = $("#dropzone"); if(!z) return;
+  z.ondragover = e => { e.preventDefault(); z.classList.add("over"); };
+  z.ondragleave = () => z.classList.remove("over");
+  z.ondrop = e => { e.preventDefault(); z.classList.remove("over"); addFiles([...e.dataTransfer.files]); };
+}
+function issuesCard(){
+  const iss = S.result?.issues || [];
+  if(!iss.length) return `<div class="card"><h3>Data checks</h3><div class="row">${stPill("green","All checks passed")}<span class="muted">No loops, missing quantities, unit gaps or suspicious IDs.</span></div></div>`;
+  const merges = iss.filter(i => i.fix?.type === "alias");
+  const rows = iss.map(i => {
+    let act = "";
+    const fx = i.fix || {};
+    if(fx.type === "alias") act = `<button class="btn small" data-action="fix-alias" data-issue="${esc(i.id)}">Treat ${fx.from.map(esc).join(", ")} as ${esc(fx.to)}</button>
+        <select class="sel small" data-change="alias-target" data-issue="${esc(i.id)}"><option value="">Choose a different ID…</option>${i.parts.map(p=>`<option>${esc(p)}</option>`).join("")}</select>`;
+    if(fx.type === "conversion") act = `<span class="small">1 ${esc(fx.from_uom)} =</span><input class="inp num" id="cv-${esc(fx.line)}" placeholder="e.g. 0.001" inputmode="decimal"><span class="small">${esc(fx.to_uom)}</span><button class="btn small" data-action="fix-conv" data-line="${esc(fx.line)}">Apply</button>`;
+    if(fx.type === "qty") act = `<span class="small">Quantity per</span><input class="inp num" id="qt-${esc(fx.line)}" inputmode="decimal"><button class="btn small" data-action="fix-qty" data-line="${esc(fx.line)}">Apply</button>`;
+    if(fx.type === "exclude" && fx.options) act = `<span class="small">Remove line:</span><select class="sel" id="cy-${esc(i.id)}">${fx.options.map(o=>`<option value="${esc(o.line)}" ${o.line===fx.line?"selected":""}>${esc(o.parent)} > ${esc(o.child)} (${esc(o.source)} row ${o.row})${o.line===fx.line?" · suggested":""}</option>`).join("")}</select><button class="btn small" data-action="fix-cycle" data-issue="${esc(i.id)}">Remove</button>`;
+    else if(fx.type === "duplicate") act = `<button class="btn small" data-action="fix-dup" data-line="${esc(fx.line)}" data-mode="sum">Add the quantities together</button><button class="btn small" data-action="fix-dup" data-line="${esc(fx.line)}" data-mode="first">Keep only the first line</button>`;
+    else if(fx.type === "stock") act = `<button class="btn small" data-action="fill" data-field="available" data-parts="${esc(JSON.stringify([fx.part]))}">Enter available stock</button>`;
+    else if(fx.type === "exclude") act = `<button class="btn small" data-action="fix-exclude" data-line="${esc(fx.line)}">${i.code==="duplicate_line"?"Confirm: ignore the duplicate":"Exclude this line"}</button>`;
+    return `<div class="issue"><span class="sev ${i.severity}">${i.severity}</span><div class="msg">${esc(i.message)}${act?`<div class="act">${act}</div>`:""}</div></div>`;
+  }).join("");
+  return `<div class="card"><div class="tbar"><h3>Data checks</h3><span class="hint">Errors block the affected products. Suggested merges are never applied without you.</span><div class="spacer"></div>
+    ${merges.length?`<button class="btn small" data-action="fix-all-alias">Apply all ${merges.length} suggested merges</button>`:""}</div>${rows}</div>`;
+}
+function fixesCard(){
+  const f = S.state.fixes, o = S.state.overrides, items = [];
+  Object.entries(f.aliases).forEach(([a,b]) => items.push([`ID ${a} treated as ${b}`, "alias", a]));
+  Object.entries(f.conversions).forEach(([k,v]) => items.push([`Unit conversion ${v} on ${lineLabel(k)}`, "conversions", k]));
+  Object.entries(f.qty).forEach(([k,v]) => items.push([`Quantity ${v} on ${lineLabel(k)}`, "qty", k]));
+  f.excluded.forEach(k => items.push([`Excluded ${lineLabel(k)}`, "excluded", k]));
+  Object.entries(f.duplicates||{}).forEach(([k,v]) => items.push([`Duplicate on ${lineLabel(k)}: ${v==="sum"?"added to the first line":"ignored, first line kept"}`, "duplicates", k]));
+  const nOv = ["available","unit_cost","selling_price"].map(k => [k, Object.keys(o[k]).length]).filter(x => x[1]);
+  const nWk = ["demand","receipts"].map(k => [k, Object.values(o[k]||{}).reduce((a,w) => a + Object.keys(w).length, 0)]).filter(x => x[1]);
+  if(!items.length && !nOv.length && !nWk.length) return "";
+  return `<div class="card" style="margin-top:14px"><h3>Your fixes and entered values</h3><div class="hint" style="margin-bottom:8px">Saved in the project file. Undo any of them at any time.</div>
+    ${items.map(([t,kind,key]) => `<div class="row" style="justify-content:space-between;border-bottom:1px solid #EEF1F5;padding:5px 0"><span class="small">${esc(t)}</span><button class="btn small ghost" data-action="undo-fix" data-kind="${kind}" data-key="${esc(key)}">Undo</button></div>`).join("")}
+    ${nOv.map(([k,n]) => `<div class="row" style="justify-content:space-between;padding:5px 0"><span class="small">${n} ${k==="available"?"stock quantities":k==="unit_cost"?"unit costs":"selling prices"} entered in the tool</span><span><button class="btn small" data-action="fill" data-field="${k}" data-parts="${esc(JSON.stringify(Object.keys(o[k])))}">Edit</button> <button class="btn small ghost" data-action="clear-ov" data-field="${k}">Clear</button></span></div>`).join("")}
+    ${nWk.map(([k,n]) => `<div class="row" style="justify-content:space-between;padding:5px 0"><span class="small">${n} weekly ${k==="demand"?"demand":"receipt"} values entered in the tool</span><span><button class="btn small" data-action="nav" data-page="feasibility">Edit</button> <button class="btn small ghost" data-action="clear-ov" data-field="${k}">Clear</button></span></div>`).join("")}</div>`;
+}
+function lineLabel(key){ const [tid, i] = key.split(":"); const t = S.state.tabs.find(x => x.id === tid); return t ? `${t.sheet} row ${+i+2}` : key; }
+function tabCard(t){
+  const m = S.state.mappings[t.id] || {kind:"ignore", columns:{}};
+  const spec = S.schema.kinds[m.kind] || {required:[], optional:[]};
+  const wide = (m.week_columns||[]).length > 0;
+  let fields = spec.required.map(f=>[f,true]).concat(spec.optional.map(f=>[f,false]));
+  if(wide) fields = fields.filter(([f]) => !["week","demand_qty","receipt_qty"].includes(f));
+  const opts = sel => `<option value="">(none)</option>` + t.headers.map(h => `<option ${h===sel?"selected":""}>${esc(h)}</option>`).join("");
+  let missingReq = spec.required.filter(f => !m.columns[f]);
+  if((m.kind==="demand"||m.kind==="receipts") && !wide){ const qf = m.kind==="demand"?"demand_qty":"receipt_qty"; ["week", qf].forEach(f => { if(!m.columns[f]) missingReq.push(f); }); }
+  const preview = S.ui["prev-"+t.id] ? `<div class="tablewrap" style="margin-top:10px;max-height:220px"><table class="t"><thead><tr>${t.headers.map(h=>`<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${t.rows.slice(0,8).map(r=>`<tr>${t.headers.map((_,i)=>`<td>${esc(r[i])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : "";
+  return `<div class="tabcard"><div class="hd"><span class="nm">${esc(t.sheet)}</span><span class="muted small">${esc(t.file)} · ${t.rows.length} rows</span>
+    ${missingReq.length && m.kind!=="ignore" ? stPill("red","Missing: "+missingReq.map(f=>FIELD_LABEL[f]).join(", ")) : m.kind==="ignore" ? stPill("none","Ignored") : stPill("green","Mapped")}
+    <div class="spacer"></div>
+    <select class="sel" data-change="tab-kind" data-tab="${t.id}">${Object.entries(KIND_LABEL).map(([k,l])=>`<option value="${k}" ${k===m.kind?"selected":""}>${l}</option>`).join("")}</select>
+    <button class="btn small" data-action="toggle-preview" data-tab="${t.id}">${S.ui["prev-"+t.id]?"Hide":"Preview"}</button>
+    <button class="btn small ghost" data-action="remove-tab" data-tab="${t.id}" title="Remove tab">Remove</button></div>
+    ${m.kind!=="ignore" ? `<div class="maprow">${fields.map(([f,req]) => `<label class="${req?"req":""}"><span>${FIELD_LABEL[f]||f}</span><select class="sel" data-change="map-col" data-tab="${t.id}" data-field="${f}">${opts(m.columns[f])}</select></label>`).join("")}
+      ${m.kind==="indented" ? `<label class="req"><span>Top-level part</span><input class="inp" data-change="map-root" data-tab="${t.id}" value="${esc(m.root||"")}" placeholder="e.g. PO-300">${m.root_guessed?`<span style="color:#A87700">Guessed from the sheet name; confirm</span>`:""}</label>` : ""}
+      ${wide ? `<label><span>Week columns found</span><span class="small" style="padding-top:7px">${m.week_columns.map(esc).join(", ")}</span></label>` : ""}</div>` : ""}
+    ${preview}</div>`;
+}
+
+/* ---------- BOM explorer (on the Data page) ---------- */
+function explorerCard(after){
+  const r = S.result;
+  if(!r || r.error) return "";
+  if(r.blocked){
+    const cyc = (r.issues||[]).some(i => i.code === "cycle");
+    return `<div class="card" style="margin-bottom:14px"><h3>Bill of materials</h3><div class="ready blocked" style="margin:6px 0 0">${cyc ? "The BOM contains a loop, so the structure can't be drawn yet. Fix it in Data checks below; the tool suggests which line to remove." : "Map a BOM tab to see the structure."}</div></div>`;
+  }
+  const fgs = r.finished_goods;
+  if(!S.ui.explorerFg || (S.ui.explorerFg !== "__all" && !fgs.includes(S.ui.explorerFg))) S.ui.explorerFg = fgs[0];
+  if(S.ui.explorerFg === "__all" && S.ui.explorerView === "tree") S.ui.explorerFg = fgs[0];
+  if(!S.graph){ try{ S.graph = loadGraph(); }catch(e){ return `<div class="card">${esc(e.message)}</div>`; } }
+  const v = S.ui.explorerView;
+  const views = [["tree","Structure tree"],["network","Network"],["flow","Flow ($)"]];
+  after.push(() => drawExplorer());
+  const notes = {tree:"Top-down product structure. Quantities cover the 4-week demand. Raw materials are colored by their worst week.",
+    network:"Every part and BOM line, with effective ratios on the links. Click a part to highlight what it feeds and contains.",
+    flow:"Raw materials on the left flow into finished goods on the right. Band width is dollars of material for the 4-week demand."+(S.graph.sankey?.partial?" Partial: materials without a unit cost count as $0.":"")};
+  const card = {tree:"bom-tree", network:"bom-network", flow:"bom-flow"}[v];
+  const controls = `<div class="seg">${views.map(([k,l])=>`<button class="${v===k?"on":""}" data-action="explorer-view" data-v="${k}">${l}</button>`).join("")}</div>
+      ${v!=="flow"?`<select class="sel filter" data-change="explorer-fg" title="Filter">${v==="network"?`<option value="__all" ${S.ui.explorerFg==="__all"?"selected":""}>All finished goods</option>`:""}${fgs.map(f=>`<option value="${esc(f)}" ${f===S.ui.explorerFg?"selected":""}>${esc(plabel(f))}</option>`).join("")}</select>`:""}
+      ${v==="tree"?`<button class="btn small" data-action="tree-orient">${S.ui.treeOrient==="TB"?"Left to right":"Top down"}</button>`:""}`;
+  return `<div class="card" style="margin-bottom:14px"><div class="tbar"><h3>Bill of materials</h3>${controls}<div class="spacer"></div>
+      <div class="legend">${v==="network"?`<span><i style="background:${COLORS.fg}"></i>Finished good</span><span><i style="background:${COLORS.assembly}"></i>Assembly</span>`:""}${["red","amber","green"].map(s=>`<span><i style="background:${COLORS[s]}"></i>${STATUS_LABEL[s]}</span>`).join("")}</div>
+      <button class="btn small" data-action="export-xlsx" data-module="bom">Export</button><button class="btn small" data-action="add-card" data-card="${card}">+ Briefing</button></div>
+    <div class="hint" style="margin-bottom:8px">${notes[v]}</div><div id="explorer-canvas"></div><div id="explorer-side" class="small" style="margin-top:10px"></div></div>`;
+}
+function loadGraph(){ const fg = S.ui.explorerFg && S.ui.explorerFg !== "__all" ? S.ui.explorerFg : S.result.finished_goods[0];
+  return call("graph_data", S.state, fg); }
+function treeData(n){
+  const leaf = !n.children.length;
+  return {name:n.name, value:n.qty, children:n.children.map(treeData),
+    itemStyle:{color: leaf ? COLORS[n.status] || COLORS.unknown : COLORS.assembly, borderColor:"#fff"},
+    label:{formatter:n.repeat ? `{b|${n.name}}\n{q|see above}` : `{b|${n.name}}\n{q|${fmt(n.qty)}}`}};
+}
+function treeOption(fg, big = false){
+  const fs = big ? 14 : 11; const tb = S.ui.treeOrient === "TB";
+  return {tooltip:{formatter:p=>`<b>${esc(p.name)}</b> ${esc(desc(p.name))}<br>Quantity for plan: ${fmt(p.value)}`},
+    series:[{type:"tree",data:[treeData(S.graph.trees[fg] || Object.values(S.graph.trees)[0])],orient:tb?"TB":"LR",top:tb?"5%":"4%",bottom:tb?"24%":"4%",left:tb?"4%":"10%",right:tb?"6%":"16%",
+      symbolSize:big?12:10,initialTreeDepth:-1,expandAndCollapse:!big,animationDuration:big?0:400,edgeShape:"polyline",
+      lineStyle:{color:"#B8C2D3",width:1.2},
+      label:{position:tb?"right":"left",verticalAlign:"middle",align:tb?"left":"right",distance:8,rotate:0,fontSize:fs,
+        rich:{b:{fontSize:fs,fontWeight:600,color:COLORS.ink,lineHeight:fs+3},q:{fontSize:fs-1,color:COLORS.ink2,lineHeight:fs+2}}},
+      leaves:{label:{position:tb?"bottom":"right",align:tb?"left":"left",rotate:tb?-45:0,verticalAlign:"middle",distance:tb?10:8}}}]};
+}
+function sankeyOption(big = false){
+  const links = S.graph.sankey.links, fs = big ? 14 : 11.5; const names = new Set(); links.forEach(l=>{names.add(l.source);names.add(l.target);});
+  const kind = Object.fromEntries(S.graph.nodes.map(n=>[n.id,n])); const fgs = new Set(S.result.finished_goods);
+  return {tooltip:{trigger:"item",formatter:p=>p.dataType==="edge"?`${esc(p.data.source)} → ${esc(p.data.target)}<br>${money(p.data.value)}`:`<b>${esc(p.name)}</b> ${esc(desc(p.name))}`},
+    series:[{type:"sankey",left:big?20:10,right:big?140:110,top:10,bottom:10,nodeGap:6,nodeWidth:14,layoutIterations:64,emphasis:{focus:"adjacency"},
+      data:[...names].map(n=>({name:n,itemStyle:{color:fgs.has(n)?COLORS.fg:kind[n]?.kind==="raw"?(COLORS[kind[n].status]||COLORS.unknown):COLORS.assembly}})),
+      links:links.map(l=>({source:l.source,target:l.target,value:l.value})),
+      lineStyle:{color:"source",opacity:.28,curveness:.5},label:{fontSize:fs,color:COLORS.ink}}]};
+}
+function cyStyle(big = false){
+  return [{selector:"node",style:{"label":"data(label)","font-size":big?13:10,"font-family":"Inter, sans-serif","color":COLORS.ink,"text-valign":"bottom","text-margin-y":4,"width":big?22:18,"height":big?22:18,"background-color":COLORS.assembly,"border-width":2,"border-color":"#fff"}},
+    {selector:"node[kind='fg']",style:{"background-color":COLORS.fg,"width":big?32:26,"height":big?32:26,"font-weight":700,"font-size":big?14:11}},
+    {selector:"node[kind='raw']",style:{"shape":"round-rectangle","background-color":e=>COLORS[e.data("status")]||COLORS.unknown}},
+    {selector:"edge",style:{"width":1.2,"line-color":"#C4CCDA","target-arrow-color":"#C4CCDA","target-arrow-shape":"triangle","arrow-scale":.8,"curve-style":"bezier","label":"data(label)","font-size":big?10:8,"color":"#8792A2","text-rotation":"autorotate","text-background-color":"#fff","text-background-opacity":1}},
+    {selector:".faded",style:{"opacity":.12}},{selector:".hl",style:{"line-color":COLORS.accent,"target-arrow-color":COLORS.accent,"width":2.2}}];
+}
+function networkElements(fg){
+  let nodes = S.graph.nodes, edges = S.graph.edges;
+  if(fg && fg !== "__all"){ const keep = new Set([fg]); const kids = {}; edges.forEach(e=>(kids[e.source] ||= []).push(e.target));
+    const stack=[fg]; while(stack.length){ const n=stack.pop(); (kids[n]||[]).forEach(c=>{ if(!keep.has(c)){keep.add(c);stack.push(c);} }); }
+    nodes = nodes.filter(n=>keep.has(n.id)); edges = edges.filter(e=>keep.has(e.source)&&keep.has(e.target)); }
+  return {nodes, elements:[...nodes.map(n=>({data:{id:n.id,label:n.id,kind:n.kind,status:n.status}})),...edges.map(e=>({data:{id:e.source+">"+e.target,source:e.source,target:e.target,label:"×"+fmt(e.ratio,3)}}))]};
+}
+function cyLayout(nodes){ return {name:"breadthfirst",directed:true,roots:nodes.filter(n=>n.kind==="fg").map(n=>"#"+CSS.escape(n.id)).join(", "),spacingFactor:1.05,padding:20,animate:false}; }
+function drawExplorer(){
+  const v = S.ui.explorerView, el = $("#explorer-canvas"); if(!el) return;
+  if(v === "tree") return chart("explorer-canvas", treeOption(S.ui.explorerFg));
+  if(v === "flow"){ if(!S.graph.sankey.links.length){ el.innerHTML = `<div class="empty">Add unit costs and weekly demand to see the money flow.</div>`; return; } return chart("explorer-canvas", sankeyOption()); }
+  const {nodes, elements} = networkElements(S.ui.explorerFg);
+  S.cy = cytoscape({container:el, wheelSensitivity:.2, elements, style:cyStyle(), layout:cyLayout(nodes)});
+  S.cy.on("tap","node",ev=>{ const n = ev.target; const keep = n.predecessors().union(n.successors()).union(n);
+    S.cy.elements().addClass("faded").removeClass("hl"); keep.removeClass("faded"); keep.edges().addClass("hl");
+    let w; try{ w = call("where_used", S.state, n.id()); }catch(e){ return; }
+    $("#explorer-side").innerHTML = `<b>${esc(plabel(n.id()))}</b> · feeds ${w.finished_goods.length} finished good${w.finished_goods.length===1?"":"s"}: ${w.finished_goods.map(esc).join(", ")||"none (it is a finished good)"}${w.components.length?` · contains ${w.components.length} parts`:""} <button class="btn small ghost" data-action="explorer-reset">Clear</button>`; });
+}
+
+/* ======================================================================
+   FEASIBILITY (4-week plan against the demand signal)
+   ====================================================================== */
+const ovCell = (kind, part, w) => S.state.overrides[kind]?.[part]?.[w+1] !== undefined;
+function demandEditor(){
+  const r = S.result, L = r.weeks, fgs = r.finished_goods;
+  const any = Object.keys(S.state.overrides.demand||{}).length;
+  return `<div class="card" id="plan-card"><div class="tbar"><h3>Weekly demand</h3><span class="hint">${r.has_demand_tab?"From your demand tab. Edit any cell to test a change.":"No demand tab loaded. Type units per week."}</span><div class="spacer"></div>
+    ${any?`<button class="btn small ghost" data-action="clear-ov" data-field="demand">Reset to file</button>`:""}</div>
+    <table class="t grid-in"><thead><tr><th>Finished good</th>${L.map(l=>`<th class="num">${esc(l)}</th>`).join("")}<th class="num">Total</th></tr></thead><tbody>
+    ${fgs.map(f => `<tr><td><b>${esc(f)}</b> <span class="muted">${esc(desc(f))}</span>${r.fg_blocked[f]?` <span style="color:var(--red)">data error</span>`:""}</td>
+      ${L.map((_,w) => `<td class="num"><input class="inp cell ${ovCell("demand",f,w)?"ov":""}" type="number" min="0" step="1" value="${+(r.demand[f]?.[w]||0)}" data-change="demand-cell" data-part="${esc(f)}" data-w="${w+1}"></td>`).join("")}
+      <td class="num"><b>${fmtInt((r.demand[f]||[]).reduce((a,b)=>a+b,0))}</b></td></tr>`).join("")}</tbody></table>
+    <div class="hint" style="margin-top:6px">Edited cells are outlined in blue and saved in the project.</div></div>`;
+}
+function receiptsEditor(){
+  const r = S.result, L = r.weeks;
+  const rows = [...new Set([...Object.keys(r.receipts||{}), ...(S.ui.extraReceipts||[])])].sort();
+  const any = Object.keys(S.state.overrides.receipts||{}).length;
+  return `<div class="card"><div class="tbar"><h3>Scheduled receipts</h3><span class="hint">Open purchase orders: stock that arrives mid-plan.</span><div class="spacer"></div>
+    ${any?`<button class="btn small ghost" data-action="clear-ov" data-field="receipts">Reset to file</button>`:""}</div>
+    ${rows.length ? `<table class="t grid-in"><thead><tr><th>Material</th>${L.map(l=>`<th class="num">${esc(l)}</th>`).join("")}</tr></thead><tbody>
+    ${rows.map(m => `<tr><td><b>${esc(m)}</b> <span class="muted">${esc(desc(m))}</span></td>
+      ${L.map((_,w) => `<td class="num"><input class="inp cell ${ovCell("receipts",m,w)?"ov":""}" type="number" min="0" value="${+((r.receipts[m]||[])[w]||0)}" data-change="receipt-cell" data-part="${esc(m)}" data-w="${w+1}"></td>`).join("")}</tr>`).join("")}</tbody></table>`
+    : `<div class="muted small" style="padding:8px 0">No scheduled receipts. Without them, stock only runs down over the 4 weeks.</div>`}
+    <div class="row small" style="margin-top:8px"><select class="sel" id="rcpt-new"><option value="">Add a purchase order for…</option>${r.raw_materials.filter(m=>!rows.includes(m)).map(m=>`<option value="${esc(m)}">${esc(plabel(m))}</option>`).join("")}</select><button class="btn small" data-action="rcpt-add">Add row</button></div></div>`;
+}
+function pageFeasibility(after){
+  const g = guard(); if(g) return head("Question 1","Feasibility","Can we meet the next 4 weeks of demand with the stock we have and the stock on order?") + g;
+  const r = S.result, f = r.feasibility, L = f.labels;
+  const hasDemand = f.finished_goods.length > 0;
+  const tone = f.feasible === true ? "yes" : f.feasible === false ? "no" : (hasDemand ? "partial" : "info");
+  const late = f.weeks.reduce((a,w)=>a+w.late_filled, 0);
+  const sub = f.feasible === false ? `On-time fill rate ${fmtPct(f.on_time_rate)}. ${fmtInt(late)} units ship late, and ${fmtInt(f.unmet_end)} are still unmet after week ${r.horizon}.`
+    : f.feasible ? `Tightest material: ${esc(f.tightest||"–")}${f.has_receipts?", counting scheduled receipts":""}.` : "";
+  const fsw = f.first_short_week;
+  if(!S.ui.balanceMat || !f.materials.some(m=>m.part===S.ui.balanceMat)) S.ui.balanceMat = f.bottleneck || f.tightest || f.materials[0]?.part;
+  if(hasDemand){
+    after.push(() => chart("ch-weekly", weeklyOption(f, S.ui.weeklyFg)));
+    after.push(() => { const c = chart("ch-heat", heatOption(f, S.ui.heatAll)); c?.on("click", p => { const m = heatRows(f, S.ui.heatAll)[p.data[1]]; if(m){ S.ui.balanceMat = m.part; render(); } }); });
+    after.push(() => chart("ch-balance", balanceOption(f.materials.find(m=>m.part===S.ui.balanceMat), L)));
+  }
+  const fgSel = `<select class="sel small filter" data-change="weekly-fg" title="Filter"><option value="__all">All finished goods</option>${f.finished_goods.map(x=>`<option value="${esc(x.fg)}" ${x.fg===S.ui.weeklyFg?"selected":""}>${esc(x.fg)}</option>`).join("")}</select>`;
+  const matSel = `<select class="sel small filter" data-change="balance-mat" title="Filter">${f.materials.map(m=>`<option value="${esc(m.part)}" ${m.part===S.ui.balanceMat?"selected":""}>${esc(m.part)}${m.first_short_week?" (short)":""}</option>`).join("")}</select>`;
+  const heatN = heatRows(f, S.ui.heatAll).length;
+  const charts = hasDemand ? `
+    <div class="grid" style="grid-template-columns:1.25fr 1fr;margin-bottom:14px">
+      <div class="card">${chartHead("Demand vs what we can build, by week", "Each bar is that week's demand plus any backlog: built on time, backlog filled late, and short. The line is the week's demand.", "feas-weekly", fgSel)}<div id="ch-weekly" class="chart"></div></div>
+      <div class="card">${chartHead("Projected stock balance", "Starting stock, plus receipts, minus what each week's demand needs if built on time. Below zero is a shortage.", "feas-balance", matSel)}<div id="ch-balance" class="chart"></div></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">${chartHead("Material availability by week", `Each cell is a material's projected balance at the end of the week, colored by cumulative coverage. Click a row to chart its balance.`, "feas-heatmap",
+      `<button class="btn small ghost" data-action="heat-all">${S.ui.heatAll?"Show tightest 12":"Show all "+f.materials.length}</button>`)}
+      <div id="ch-heat" style="width:100%;height:${Math.max(180, heatN*30+70)}px"></div>
+      <div class="legend" style="margin-top:4px">${["red","amber","green","unknown"].map(s=>`<span><i style="background:${COLORS[s]}"></i>${{red:"Short (below 100%)",amber:"Tight (100 to 120%)",green:"Covered (120%+)",unknown:"No stock data"}[s]}</span>`).join("")}</div></div>` : "";
+  const weekCols = L.map((l,w) => ({k:"w"+w, label:l, num:true, sortv:x=>x.weeks[w].built - x.weeks[w].demand - x.weeks[w].backlog_in,
+    fmt:x=>{ const k = x.weeks[w]; const want = k.demand + k.backlog_in; return `<span style="${k.short>0?"color:var(--red);font-weight:600":""}">${fmtInt(k.built)}</span><span class="muted"> / ${fmtInt(want)}</span>${k.backlog_in>0?`<div class="tiny">incl. ${fmtInt(k.backlog_in)} backlog</div>`:""}`; }}));
+  return head("Question 1","Feasibility",`Can we meet the next ${r.horizon} weeks of demand with the stock we have and the stock on order?`, pageBtns("feasibility","feas-summary"))
+    + answer(tone, f.answer, sub) + readinessPanel("feasibility") + timeNotes()
+    + `<div class="grid g4" style="margin-bottom:14px">
+      ${kpi("On-time fill rate", fmtPct(f.on_time_rate), hasDemand?`${fmtInt(f.total_demand*(f.on_time_rate||0))} of ${fmtInt(f.total_demand)} units on time`:"")}
+      ${kpi("First short week", fsw ? L[fsw-1] : (hasDemand ? "None" : "–"), fsw ? `${fmtInt(f.weeks[fsw-1].short)} units short` : (hasDemand ? `all ${r.horizon} weeks covered` : ""))}
+      ${kpi(`Unmet after week ${r.horizon}`, fmtInt(f.unmet_end), late ? `${fmtInt(late)} more units ship late` : "carried as backlog")}
+      ${kpi("Bottleneck", f.bottleneck || f.tightest || "–", f.bottleneck ? desc(f.bottleneck) : (f.tightest ? "tightest; no shortage" : ""))}</div>`
+    + charts
+    + `<div class="grid g2" style="margin-bottom:14px">${demandEditor()}${receiptsEditor()}</div>`
+    + (hasDemand ? `<div class="card" style="margin-bottom:14px">${table("feas-fg", [
+        {k:"fg",label:"Finished good",fmt:x=>`<b>${esc(x.fg)}</b> <span class="muted">${esc(x.description)}</span>`},
+        ...weekCols,
+        {k:"demand",label:"Demand",num:true,fmt:x=>fmtInt(x.demand)},
+        {k:"fill_rate",label:"On-time fill",num:true,fmt:x=>fmtPct(x.fill_rate)},
+        {k:"unmet",label:`Unmet after wk ${r.horizon}`,num:true,fmt:x=>x.unmet?`<b style="color:var(--red)">${fmtInt(x.unmet)}</b>`:"0"}],
+        f.finished_goods, {title:"Built vs needed, by finished good", note:"Built / demand plus backlog. When stock is short, the highest-value products are built first.", maxh:false})}</div>
+      <div class="card">${table("feas-mat", [
+        {k:"part",label:"Material",fmt:x=>`<b>${esc(x.part)}</b>`},
+        {k:"description",label:"Description"},
+        {k:"overall",label:"Status",fmt:x=>stPill(x.overall),sortv:x=>({red:0,amber:1,green:2,unknown:3})[x.overall]},
+        {k:"first_short_week",label:"First short",fmt:x=>x.first_short_week?esc(L[x.first_short_week-1]):"–",sortv:x=>x.first_short_week||99},
+        {k:"on_hand",label:"On hand",num:true,fmt:x=>fmt(x.on_hand)},
+        {k:"total_receipts",label:"Receipts",num:true,fmt:x=>fmt(x.total_receipts)},
+        {k:"total_required",label:`Required (${r.horizon} wk)`,num:true,fmt:x=>fmt(x.total_required)},
+        {k:"shortfall",label:"Shortfall",num:true,fmt:x=>x.shortfall?`<b style="color:var(--red)">${fmt(x.shortfall)}</b>`:fmt(x.shortfall)},
+        {k:"worst_coverage",label:"Lowest coverage",num:true,fmt:x=>fmtPct(x.worst_coverage),hide:true},
+        {k:"fgs",label:"Used in",fmt:x=>x.fgs.map(esc).join(", "),sortv:x=>x.fgs.length,hide:true},
+        {k:"uom",label:"Unit"}], f.materials, {click:"trace", title:`Raw materials over ${r.horizon} weeks`, note:"Click a row to see the arithmetic behind it."})}</div>` : "");
+}
+function timeNotes(){ const n = S.result.time_notes || []; return n.length ? `<div class="small muted" style="margin:-4px 0 12px">${n.map(esc).join(". ")}.</div>` : ""; }
+function weeklySeries(f, fg){
+  if(!fg || fg === "__all") return f.weeks;
+  const row = f.finished_goods.find(x => x.fg === fg); return row ? row.weeks : f.weeks;
+}
+function weeklyOption(f, fg, big = false){
+  const fs = big ? 15 : 11.5, w = weeklySeries(f, fg), L = f.labels;
+  const lab = (v, i) => { const d = w[i].demand; return d ? Math.round(w[i].on_time / d * 100) + "% on time" : ""; };
+  return {grid:{left:big?70:56,right:16,top:big?52:42,bottom:28}, legend:{top:0,textStyle:{fontSize:fs-1},itemWidth:14,itemHeight:10},
+    tooltip:{trigger:"axis",axisPointer:{type:"shadow"},formatter:p=>{ const k = w[p[0].dataIndex]; return `<b>${esc(L[p[0].dataIndex])}</b><br>Demand ${fmtInt(k.demand)}${k.backlog_in?` + backlog ${fmtInt(k.backlog_in)}`:""}<br>Built on time ${fmtInt(k.on_time)}<br>Backlog filled ${fmtInt(k.late_filled)}<br>Short ${fmtInt(k.short)}`; }},
+    xAxis:{type:"category",data:L,axisLabel:{fontSize:fs,color:COLORS.ink},axisTick:{show:false}},
+    yAxis:{type:"value",axisLabel:{fontSize:fs,formatter:v=>v.toLocaleString()},splitLine:{lineStyle:{color:COLORS.grid}}},
+    series:[{name:"Built on time",type:"bar",stack:"b",barMaxWidth:big?90:64,data:w.map(k=>k.on_time),itemStyle:{color:COLORS.accent}},
+      {name:"Backlog filled",type:"bar",stack:"b",data:w.map(k=>k.late_filled),itemStyle:{color:"#8FA9EA"}},
+      {name:"Short",type:"bar",stack:"b",data:w.map(k=>k.short),itemStyle:{color:COLORS.red,borderRadius:[3,3,0,0]},
+       label:{show:true,position:"top",fontSize:fs-1,color:COLORS.ink2,formatter:p=>lab(p.value,p.dataIndex)}},
+      {name:"Demand",type:"line",data:w.map(k=>k.demand),symbol:"circle",symbolSize:big?9:7,lineStyle:{color:COLORS.ink,width:2,type:"dashed"},itemStyle:{color:COLORS.ink},z:5}]};
+}
+function heatRows(f, all){ return all ? f.materials : f.materials.slice(0, 12); }
+function heatOption(f, all, big = false){
+  const fs = big ? 14 : 11.5, rows = heatRows(f, all).slice().reverse(), L = f.labels;
+  const code = {red:0, amber:1, green:2, unknown:3};
+  const data = []; rows.forEach((m, y) => L.forEach((_, x) => data.push([x, y, code[m.status[x]]])));
+  return {grid:{left:big?150:118,right:16,top:28,bottom:8}, tooltip:{formatter:p=>{ const m = rows[p.data[1]], x = p.data[0];
+      return `<b>${esc(m.part)}</b> ${esc(m.description)}<br>${esc(L[x])}: needs ${fmt(m.required[x])}, receives ${fmt(m.receipts[x])}<br>Ending balance ${fmt(m.balance[x])} ${esc(m.uom)}<br>Coverage to date ${fmtPct(m.coverage[x])}`; }},
+    xAxis:{type:"category",position:"top",data:L,axisLabel:{fontSize:fs,color:COLORS.ink,fontWeight:600},axisTick:{show:false},axisLine:{show:false},splitArea:{show:false}},
+    yAxis:{type:"category",data:rows.map(m=>m.part),axisLabel:{fontSize:fs,color:COLORS.ink},axisTick:{show:false},axisLine:{show:false}},
+    visualMap:{show:false,type:"piecewise",dimension:2,pieces:[{value:0,color:"#F4C7C7"},{value:1,color:"#FBE3A6"},{value:2,color:"#CDEBDC"},{value:3,color:"#E6EAF0"}]},
+    series:[{type:"heatmap",data,itemStyle:{borderColor:"#fff",borderWidth:3,borderRadius:4},
+      label:{show:true,fontSize:fs-1,color:COLORS.ink,formatter:p=>{ const m = rows[p.data[1]]; const b = m.balance[p.data[0]]; return b==null ? "–" : Math.round(b).toLocaleString(); }}}]};
+}
+function balanceOption(m, L, big = false){
+  if(!m) return {};
+  const fs = big ? 15 : 11.5, cats = ["On hand", ...L];
+  const bal = [m.on_hand, ...m.balance];
+  return {grid:{left:big?80:60,right:16,top:big?52:42,bottom:28}, legend:{top:0,textStyle:{fontSize:fs-1},itemWidth:14,itemHeight:10},
+    tooltip:{trigger:"axis",formatter:p=>{ const i = p[0].dataIndex; return i===0 ? `<b>${esc(m.part)}</b><br>On hand ${fmt(m.on_hand)} ${esc(m.uom)}` :
+      `<b>${esc(L[i-1])}</b><br>Receipts ${fmt(m.receipts[i-1])}<br>Required ${fmt(m.required[i-1])}<br>Ending balance ${fmt(m.balance[i-1])} ${esc(m.uom)}`; }},
+    xAxis:{type:"category",data:cats,axisLabel:{fontSize:fs,color:COLORS.ink},axisTick:{show:false}},
+    yAxis:{type:"value",name:m.uom||"",nameTextStyle:{fontSize:fs-1,color:COLORS.ink2},axisLabel:{fontSize:fs,formatter:v=>v.toLocaleString()},splitLine:{lineStyle:{color:COLORS.grid}}},
+    series:[{name:"Receipts",type:"bar",barMaxWidth:big?40:26,data:["-", ...m.receipts],itemStyle:{color:COLORS.green,borderRadius:[3,3,0,0]}},
+      {name:"Required",type:"bar",barMaxWidth:big?40:26,data:["-", ...m.required],itemStyle:{color:"#B8C2D3",borderRadius:[3,3,0,0]}},
+      {name:"Projected balance",type:"line",data:bal.map(v=>({value:v,itemStyle:{color:v!=null&&v<0?COLORS.red:COLORS.accent}})),symbol:"circle",symbolSize:big?11:9,
+       lineStyle:{color:COLORS.accent,width:2.5},z:5,label:{show:true,position:"top",fontSize:fs-1,fontWeight:600,color:COLORS.ink,formatter:p=>p.value==null?"":Math.round(p.value).toLocaleString()},
+       markLine:{silent:true,symbol:"none",lineStyle:{color:COLORS.red,type:"dashed"},label:{show:false},data:[{yAxis:0}]}}]};
+}
+
+/* ======================================================================
+   COST
+   ====================================================================== */
+function pageCost(after){
+  const g = guard(); if(g) return head("Question 2","Cost","What does the plan cost in materials, and what does the gap cost to close?") + g;
+  const r = S.result, c = r.cost, fgs = c.per_fg.map(x=>x.fg);
+  if(!S.ui.costFg || !fgs.includes(S.ui.costFg)) S.ui.costFg = fgs[0];
+  const sel = c.per_fg.find(x=>x.fg===S.ui.costFg);
+  const ar = c.at_risk;
+  const tone = c.missing_costs.length ? "partial" : "info";
+  const toTrace = p => { if(S.result.raw_materials.includes(p.name)) showTrace(p.name); };
+  after.push(() => chart("ch-wf", waterfallOption(sel))?.on("click", toTrace));
+  after.push(() => chart("ch-pareto", paretoOption(c, 10))?.on("click", toTrace));
+  const partial = c.missing_costs.length ? " (partial)" : "";
+  const sub = ar ? (ar.dollars!=null ? `Revenue at risk: ${money(ar.dollars)} from ${fmtInt(ar.units_total)} units still unmet after week ${r.horizon}.` : `${fmtInt(ar.units_total)} units are still unmet after week ${r.horizon}; add selling prices to value them.`) : "";
+  const fgSel = `<select class="sel small filter" data-change="cost-fg" title="Filter">${fgs.map(f=>`<option ${f===S.ui.costFg?"selected":""}>${esc(f)}</option>`).join("")}</select>`;
+  return head("Question 2","Cost",`Material cost of the ${r.horizon}-week plan, scrap, the cost to close shortfalls, and revenue at risk.`, pageBtns("cost","cost-summary"))
+    + answer(tone, c.answer, sub) + readinessPanel("cost")
+    + `<div class="grid g4" style="margin-bottom:14px">${kpi("Plan material cost"+partial, moneyShort(c.plan_cost), `${r.horizon} weeks of demand, incl. scrap`)}
+      ${kpi("Scrap cost"+partial, moneyShort(c.plan_scrap_cost), c.plan_cost?fmtPct(c.plan_scrap_cost/c.plan_cost)+" of material cost":"")}
+      ${kpi("Cost to cover shortfalls", moneyShort(c.shortfall_cost), c.shortfall_lines.some(l=>l.unit_cost==null)?"some shortfall costs unknown":`${c.shortfall_lines.length} material${c.shortfall_lines.length===1?"":"s"} to buy`)}
+      ${kpi("Revenue at risk", ar?.dollars!=null?moneyShort(ar.dollars):"–", ar?`${fmtInt(ar.units_total)} units unmet after week ${r.horizon}`:"needs weekly demand")}</div>`
+    + `<div class="grid g2" style="margin-bottom:14px"><div class="card">${chartHead("Unit cost build-up", `${esc(plabel(sel.fg))}: ${money(sel.unit_cost,2)} per unit${sel.complete?"":" (partial: "+sel.missing_costs.length+" costs missing)"}${sel.selling_price!=null?` · sells for ${money(sel.selling_price,2)}`:""}`, "cost-waterfall", fgSel)}<div id="ch-wf" class="chart"></div></div>
+      <div class="card">${chartHead("Where the plan's material money goes", "Top materials by plan spend, with cumulative share.", "cost-pareto")}<div id="ch-pareto" class="chart"></div></div></div>`
+    + `<div class="card" style="margin-bottom:14px">${table("cost-fg", [
+        {k:"fg",label:"Finished good",fmt:x=>`<b>${esc(x.fg)}</b> <span class="muted">${esc(desc(x.fg))}</span>`},
+        {k:"planned",label:`Demand (${r.horizon} wk)`,num:true,fmt:x=>fmtInt(x.planned)},
+        {k:"unit_cost",label:"Unit material cost",num:true,fmt:x=>money(x.unit_cost,2)+(x.complete?"":" *")},
+        {k:"scrap_cost",label:"Scrap per unit",num:true,fmt:x=>money(x.scrap_cost,2)},
+        {k:"selling_price",label:"Selling price",num:true,fmt:x=>money(x.selling_price,2)},
+        {k:"margin",label:"Material margin",num:true,fmt:x=>x.margin==null?"–":money(x.margin,2)},
+        {k:"plan_cost",label:"Plan cost",num:true,fmt:x=>money(x.plan_cost)}], c.per_fg, {title:"By finished good", note:c.missing_costs.length?"* partial: some unit costs missing":"", maxh:false})}</div>`
+    + (c.shortfall_lines.length ? `<div class="card">${table("cost-short", [
+        {k:"part",label:"Material",fmt:x=>`<b>${esc(x.part)}</b> <span class="muted">${esc(desc(x.part))}</span>`},
+        {k:"first_short_week",label:"First short",fmt:x=>x.first_short_week?esc(r.weeks[x.first_short_week-1]):"–"},
+        {k:"shortfall",label:`Shortfall over ${r.horizon} wk`,num:true,fmt:x=>fmt(x.shortfall)},
+        {k:"unit_cost",label:"Unit cost",num:true,fmt:x=>money(x.unit_cost,2)},
+        {k:"cost",label:"Cost to cover",num:true,fmt:x=>money(x.cost)}], c.shortfall_lines, {title:"Shortfall buy list", note:"Net of stock and scheduled receipts. Order minimums and pack sizes are not applied.", maxh:false})}</div>` : "");
+}
+function waterfallOption(sel, big = false){
+  const fs = big ? 15 : 11.5;
+  const lines = sel.lines.slice(); const top = lines.slice(0, 7), rest = lines.slice(7);
+  const items = top.map(l => [l.part, l.cost_no_scrap]);
+  if(rest.length) items.push([`Other (${rest.length})`, rest.reduce((a,l)=>a+l.cost_no_scrap,0)]);
+  items.push(["Scrap", sel.scrap_cost]);
+  let run = 0; const base = [], val = [];
+  items.forEach(([,v]) => { base.push(run); val.push(v); run += v; });
+  const cats = items.map(i=>i[0]).concat(["Unit cost"]);
+  base.push(0); val.push(run);
+  return {grid:{left:big?70:56,right:16,top:16,bottom:big?70:60}, tooltip:{trigger:"axis",axisPointer:{type:"shadow"},formatter:p=>{const i=p[1].dataIndex;return `<b>${esc(cats[i])}</b> ${esc(desc(cats[i]))}<br>${money(val[i],2)}`;}},
+    xAxis:{type:"category",data:cats,axisLabel:{interval:0,rotate:35,fontSize:fs,color:COLORS.ink}},
+    yAxis:{type:"value",axisLabel:{formatter:v=>"$"+v,fontSize:fs},splitLine:{lineStyle:{color:COLORS.grid}}},
+    series:[{type:"bar",stack:"w",itemStyle:{color:"transparent"},data:base,silent:true},
+      {type:"bar",stack:"w",barMaxWidth:46,data:val.map((v,i)=>({value:v,itemStyle:{color:i===val.length-1?COLORS.ink:cats[i]==="Scrap"?COLORS.amber:COLORS.accent,borderRadius:3}})),
+       label:{show:true,position:"top",fontSize:fs-1,color:COLORS.ink2,formatter:p=>money(p.value, p.value<10?2:0)}}]};
+}
+function paretoOption(c, n, big = false){
+  const fs = big ? 15 : 11.5; const spend = {};
+  c.per_fg.forEach(f => f.lines.forEach(l => spend[l.part] = (spend[l.part]||0) + l.cost * (f.planned || 0)));
+  const all = Object.entries(spend).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]); const total = all.reduce((a,b)=>a+b[1],0);
+  const rows = all.slice(0, n); let cum = 0; const cumv = rows.map(r => (cum += r[1]) / (total || 1));
+  return {grid:{left:big?80:60,right:big?60:46,top:20,bottom:big?60:50}, tooltip:{trigger:"axis",formatter:p=>`<b>${esc(p[0].name)}</b> ${esc(desc(p[0].name))}<br>Plan spend ${money(p[0].value)}<br>Cumulative ${fmtPct(p[1]?.value)}`},
+    xAxis:{type:"category",data:rows.map(r=>r[0]),axisLabel:{interval:0,rotate:35,fontSize:fs,color:COLORS.ink}},
+    yAxis:[{type:"value",axisLabel:{formatter:v=>moneyShort(v),fontSize:fs},splitLine:{lineStyle:{color:COLORS.grid}}},{type:"value",max:1,axisLabel:{formatter:v=>Math.round(v*100)+"%",fontSize:fs},splitLine:{show:false}}],
+    series:[{type:"bar",name:"Plan spend",barMaxWidth:40,data:rows.map(r=>r[1]),itemStyle:{color:COLORS.accent,borderRadius:[3,3,0,0]}},
+      {type:"line",name:"Cumulative share",yAxisIndex:1,data:cumv,symbolSize:6,lineStyle:{color:COLORS.amber,width:2},itemStyle:{color:COLORS.amber}}]};
+}
+
+/* ======================================================================
+   DRAWERS AND MODALS
+   ====================================================================== */
+function closeLayer(){ $("#layer").innerHTML = ""; }
+function openDrawer(title, body){ $("#layer").innerHTML = `<div class="drawer"><div class="mh"><h2>${title}</h2><button class="btn small ghost" data-action="close">Close</button></div><div class="mb">${body}</div></div>`; }
+function openModal(title, body, foot = ""){ $("#layer").innerHTML = `<div class="overlay" data-action="close-bg"><div class="modal"><div class="mh"><h2>${title}</h2><button class="btn small ghost" data-action="close">Close</button></div><div class="mb">${body}</div>${foot?`<div class="mf">${foot}</div>`:""}</div></div>`; }
+function showTrace(part){
+  let t; try{ t = call("trace", S.state, part); }catch(e){ return toast(e.message); }
+  const L = S.result.weeks, wk = t.weekly;
+  const paths = t.paths.map(p => {
+    const eq = [`${fmt(p.fg_qty,0)} × ${esc(p.fg)}`].concat(p.steps.map(s => {
+      const bits = [`${fmt(s.qty_per,6)}${s.uom?" "+esc(s.uom):""}`]; if(s.conversion!==1) bits.push(`× ${fmt(s.conversion,6)} conv`); if(s.scrap!==1) bits.push(`× ${fmt(s.scrap,6)} scrap`);
+      return `× ${bits.join(" ")} <span class="muted">(${esc(s.child)})</span>`; })).join("<br>");
+    return `<div class="path"><div class="eq">${eq}<br>= <b>${fmt(p.result, 6)} ${esc(t.uom)}</b></div><div class="src">${p.steps.map(s=>`${esc(s.parent)} > ${esc(s.child)}: ${esc(s.source)} row ${s.row}`).join(" · ")}</div></div>`; }).join("");
+  const weekly = wk ? `<table class="t" style="margin:4px 0 14px"><thead><tr><th></th>${L.map(l=>`<th class="num">${esc(l)}</th>`).join("")}</tr></thead><tbody>
+    <tr><td class="muted">Required</td>${wk.required.map(v=>`<td class="num">${fmt(v)}</td>`).join("")}</tr>
+    <tr><td class="muted">Receipts</td>${wk.receipts.map(v=>`<td class="num">${fmt(v)}</td>`).join("")}</tr>
+    <tr><td class="muted">Ending balance</td>${wk.balance.map((v,i)=>`<td class="num" style="${v!=null&&v<0?"color:var(--red);font-weight:600":""}">${fmt(v)}</td>`).join("")}</tr></tbody></table>
+    <div class="small muted" style="margin-bottom:10px">Starts with ${fmt(wk.on_hand)} ${esc(t.uom)} on hand. Used in ${wk.fgs.map(esc).join(", ")}.</div>` : "";
+  openDrawer(`Trace: ${esc(part)}`, `<div class="small muted">${esc(desc(part))}</div><div style="font-size:22px;font-weight:700;margin:6px 0 2px">${fmt(t.total, 6)} ${esc(t.uom)}</div>
+    <div class="small muted" style="margin-bottom:10px">Needed for ${S.result.horizon} weeks of demand, summed over ${fmtInt(t.path_count)} path${t.path_count===1?"":"s"}${t.truncated?` (first ${t.paths.length} shown)`:""}.</div>
+    ${weekly}<h3 style="font-size:14px;margin:0 0 6px">How the total is built</h3><div class="small muted" style="margin-bottom:8px">Each path multiplies the ${S.result.horizon}-week demand by every BOM line it passes through. Every factor comes from the row cited under it.</div>${paths}`);
+}
+function showFill(field, parts){
+  const label = {available:"Available stock", unit_cost:"Unit cost ($)", selling_price:"Selling price ($)"}[field];
+  const cur = S.result[{available:"inventory",unit_cost:"prices",selling_price:"prices"}[field]] || {};
+  const val = p => field === "available" ? cur[p] : cur[p]?.[field];
+  openModal(`Enter ${label.toLowerCase()}`, `<div class="hint" style="margin-bottom:10px">Values entered here are saved in the project file and override the loaded data. Leave blank to skip.</div>
+    <table class="t"><thead><tr><th>Part</th><th>Description</th><th class="num">${label}</th></tr></thead><tbody>${parts.map(p=>`<tr><td><b>${esc(p)}</b></td><td>${esc(desc(p))}</td><td class="num"><input class="inp num" data-fill="${esc(p)}" value="${val(p)??""}" inputmode="decimal"></td></tr>`).join("")}</tbody></table>`,
+    `<button class="btn" data-action="close">Cancel</button><button class="btn primary" data-action="fill-save" data-field="${field}">Save values</button>`);
+}
+function showMenu(){
+  openModal("Project", `<div class="grid g2">
+    <div class="card"><h3>File</h3><div class="row"><button class="btn" data-action="save-as">Save as…</button><button class="btn" data-action="open-project">Open…</button><button class="btn" data-action="new-project">New project</button></div>
+    <div class="hint" style="margin-top:8px">The project file holds inputs only: tabs, mappings, fixes and entered values, including demand and receipt edits. Results are recalculated when it opens. Your work also autosaves in this browser.</div></div>
+    <div class="card"><h3>Display</h3><label class="small">Decimal places shown <select class="sel" data-change="decimals">${[0,1,2,3,4,6].map(d=>`<option ${d===dec()?"selected":""}>${d}</option>`).join("")}</select></label>
+    <div class="hint" style="margin-top:8px">Calculations always use full precision. Excel exports keep full precision; this only changes what's displayed.</div></div>
+    <div class="card"><h3>How the numbers work</h3><div class="small" style="line-height:1.6">Effective ratio per BOM line = quantity per × unit conversion × scrap factor. Each week, stock is the carry-over plus that week's receipts. The tool builds as much of the week's demand and any backlog as stock allows, highest-value products first, using an exact integer solver; unmet demand carries to the next week. Production is assumed in the week of demand. No AI model runs inside this tool.</div></div>
+    <div class="card"><h3>About</h3><div class="small" style="line-height:1.6">BOM Gap Analyzer, engine v${esc(S.schema.version)}. Runs entirely in your browser; no data is uploaded. Decision support only; the ERP remains the system of record.</div></div></div>`);
+}
+
+/* ======================================================================
+   BRIEFING: every chart can become a 16:9 card
+   ====================================================================== */
+const feasOk = () => S.result && !S.result.blocked && S.result.feasibility?.finished_goods.length > 0;
+const dataOk = () => S.result && !S.result.blocked;
+function bomGraph(){ if(!S.graph) S.graph = loadGraph(); return S.graph; }
+function feasKpis(f){ const L = f.labels, fsw = f.first_short_week;
+  return [["On-time fill rate", fmtPct(f.on_time_rate)], ["First short week", fsw ? L[fsw-1] : "None"], [`Unmet after week ${S.result.horizon}`, fmtInt(f.unmet_end)], ["Bottleneck", f.bottleneck || f.tightest || "–"]]; }
+const toneOf = f => f.feasible === true ? "green" : f.feasible === false ? "red" : "amber";
+const CARDS = {
+  "feas-summary": {page:"Feasibility", name:"Summary: can we meet demand?", ready:feasOk, why:"Needs weekly demand",
+    spec:() => { const f = S.result.feasibility; return {kicker:"Feasibility · next "+S.result.horizon+" weeks", headline:f.answer, tone:toneOf(f), kpis:feasKpis(f), mod:"feasibility",
+      chart:weeklyOption(f, "__all", true), chartTitle:"Demand vs what we can build, by week"}; }},
+  "feas-weekly": {page:"Feasibility", name:"Demand vs what we can build, by week", ready:feasOk, why:"Needs weekly demand",
+    spec:() => { const f = S.result.feasibility, fg = S.ui.weeklyFg, w = weeklySeries(f, fg);
+      const dem = w.reduce((a,k)=>a+k.demand,0), ot = w.reduce((a,k)=>a+k.on_time,0), sw = w.map((k,i)=>k.short>0?f.labels[i]:null).filter(Boolean);
+      const who = fg && fg !== "__all" ? plabel(fg) : "All finished goods";
+      return {kicker:"Feasibility · "+who, headline: sw.length ? `${fmtPct(dem?ot/dem:null)} of demand ships on time; ${sw.join(" and ")} end short.` : `All ${fmtInt(dem)} units of demand ship on time across ${S.result.horizon} weeks.`,
+        tone:sw.length?"red":"green", kpis:[["Demand", fmtInt(dem)], ["Built on time", fmtInt(ot)], ["Short weeks", sw.length || "None"]], mod:"feasibility",
+        chart:weeklyOption(f, fg, true), chartTitle:"Demand vs what we can build, by week"}; }},
+  "feas-balance": {page:"Feasibility", name:"Projected stock balance (selected material)", ready:feasOk, why:"Needs weekly demand",
+    spec:() => { const f = S.result.feasibility, m = f.materials.find(x=>x.part===S.ui.balanceMat) || f.materials[0], L = f.labels;
+      const low = Math.min(...m.balance.filter(v=>v!=null)), lowW = m.balance.indexOf(low), rw = m.receipts.map((v,i)=>v>0?L[i]:null).filter(Boolean);
+      const headline = m.first_short_week ? `${m.part} runs ${fmt(-low)} ${m.uom} short in ${L[lowW]}${rw.length?`; ${fmt(m.total_receipts)} arrive in ${rw.join(", ")}`:"; no receipts are scheduled"}.`
+        : `${m.part} stays covered for all ${S.result.horizon} weeks, ending at ${fmt(m.balance[m.balance.length-1])} ${m.uom}.`;
+      return {kicker:"Feasibility · "+plabel(m.part), headline, tone:m.first_short_week?"red":"green", mod:"feasibility",
+        kpis:[["On hand", fmt(m.on_hand)], ["Receipts", fmt(m.total_receipts)], ["Required", fmt(m.total_required)], ["Shortfall", fmt(m.shortfall)]],
+        chart:balanceOption(m, L, true), chartTitle:`Projected stock balance (${m.uom})`}; }},
+  "feas-heatmap": {page:"Feasibility", name:"Material availability by week", ready:feasOk, why:"Needs weekly demand",
+    spec:() => { const f = S.result.feasibility, sh = f.materials.filter(m=>m.first_short_week), tight = f.materials.filter(m=>!m.first_short_week && m.overall==="amber");
+      const headline = sh.length ? `${sh.map(m=>m.part).slice(0,3).join(", ")} ${sh.length===1?"runs":"run"} short, first in ${f.labels[sh[0].first_short_week-1]}; ${tight.length} more ${tight.length===1?"is":"are"} tight.` : `No material runs short; ${tight.length} ${tight.length===1?"is":"are"} tight by the end of the plan.`;
+      return {kicker:"Feasibility · materials by week", headline, tone:sh.length?"red":tight.length?"amber":"green", wide:true, mod:"feasibility",
+        kpis:[], chart:heatOption(f, false, true), chartTitle:"Projected ending balance by week (red short, amber tight, green covered)"}; }},
+  "cost-summary": {page:"Cost", name:"Summary: plan cost and revenue at risk", ready:dataOk,
+    spec:() => { const c = S.result.cost, sel = c.per_fg.find(x=>x.fg===S.ui.costFg) || c.per_fg[0];
+      return {kicker:"Cost · next "+S.result.horizon+" weeks", headline:c.answer, tone:c.missing_costs.length?"amber":"blue", mod:"cost",
+        kpis:[["Plan material cost", moneyShort(c.plan_cost)],["Scrap cost", moneyShort(c.plan_scrap_cost)],["Cost to cover shortfalls", moneyShort(c.shortfall_cost)],["Revenue at risk", c.at_risk?.dollars!=null?moneyShort(c.at_risk.dollars):"–"]],
+        chart:paretoOption(c, 10, true), chartTitle:"Where the plan's material money goes"}; }},
+  "cost-waterfall": {page:"Cost", name:"Unit cost build-up (selected product)", ready:dataOk,
+    spec:() => { const c = S.result.cost, sel = c.per_fg.find(x=>x.fg===S.ui.costFg) || c.per_fg[0];
+      return {kicker:"Cost · "+plabel(sel.fg), headline:`${sel.fg} costs ${money(sel.unit_cost,2)} per unit in materials, ${money(sel.scrap_cost,2)} of it scrap${sel.margin!=null?`, leaving a material margin of ${money(sel.margin,2)}`:""}.`,
+        tone:sel.complete?"blue":"amber", mod:"cost", kpis:[["Unit material cost", money(sel.unit_cost,2)],["Scrap per unit", money(sel.scrap_cost,2)],["Selling price", money(sel.selling_price,2)],["Material margin", sel.margin==null?"–":money(sel.margin,2)]],
+        chart:waterfallOption(sel, true), chartTitle:"Unit cost build-up"}; }},
+  "cost-pareto": {page:"Cost", name:"Where the material money goes", ready:dataOk,
+    spec:() => { const c = S.result.cost, spend = {}; c.per_fg.forEach(f => f.lines.forEach(l => spend[l.part] = (spend[l.part]||0) + l.cost*(f.planned||0)));
+      const v = Object.values(spend).sort((a,b)=>b-a), tot = v.reduce((a,b)=>a+b,0), top3 = v.slice(0,3).reduce((a,b)=>a+b,0);
+      return {kicker:"Cost · material spend", headline:`Three materials make up ${fmtPct(tot?top3/tot:null)} of the plan's ${moneyShort(tot)} material spend.`, tone:"blue", mod:"cost", wide:true, kpis:[],
+        chart:paretoOption(c, 12, true), chartTitle:"Plan spend by material, with cumulative share"}; }},
+  "bom-tree": {page:"Data", name:"Product structure tree (selected product)", ready:dataOk,
+    spec:() => { bomGraph(); const fg = S.ui.explorerFg && S.ui.explorerFg !== "__all" ? S.ui.explorerFg : S.result.finished_goods[0];
+      return {kicker:"BOM structure", headline:`${plabel(fg)}: what goes into it, and which raw materials are short`, tone:"blue", wide:true, kpis:[], chart:treeOption(fg, true), chartTitle:""}; }},
+  "bom-network": {page:"Data", name:"BOM network (selected product or all)", ready:dataOk,
+    spec:async () => { bomGraph(); const fg = S.ui.explorerFg || "__all";
+      return {kicker:"BOM structure", headline: fg === "__all" ? "How the BOMs stitch together across all finished goods" : `How ${plabel(fg)} is built, part by part`, tone:"blue", wide:true, kpis:[], image:await networkImage(fg), chartTitle:""}; }},
+  "bom-flow": {page:"Data", name:"Material money flow", ready:() => dataOk() && bomGraph().sankey?.links.length > 0, why:"Needs unit costs and weekly demand",
+    spec:() => ({kicker:"BOM structure · material spend", headline:`Where the ${S.result.horizon}-week plan's material money flows, from raw materials to finished goods`, tone:"blue", wide:true, kpis:[], chart:sankeyOption(true), chartTitle:""})},
+};
+async function networkImage(fg){
+  const host = document.createElement("div"); host.className = "capture"; host.style.width = "1160px"; host.style.height = "500px"; document.body.appendChild(host);
+  const {nodes, elements} = networkElements(fg);
+  const cy = cytoscape({container:host, elements, style:cyStyle(true), layout:cyLayout(nodes)});
+  await new Promise(r => setTimeout(r, 60));
+  const url = cy.png({full:true, scale:2, bg:"#ffffff", maxWidth:2320, maxHeight:1000});
+  cy.destroy(); host.remove(); return url;
+}
+async function renderCard(spec){
+  const toneC = {green:COLORS.green, red:COLORS.red, amber:COLORS.amber, blue:COLORS.accent}[spec.tone];
+  const rd = spec.mod ? S.result.readiness?.[spec.mod] : null;
+  const partial = rd?.status === "partial" ? `<div class="pnote">Partial answer. Missing: ${esc(rd.message)}</div>` : "";
+  const wide = spec.wide || !spec.kpis.length;
+  const visual = spec.image ? `<div style="height:${wide?500:440}px;display:flex;align-items:center;justify-content:center"><img src="${spec.image}" style="max-width:100%;max-height:100%"></div>`
+    : `<div class="pchart" id="pchart" style="${wide?"height:500px":""}"></div>`;
+  const el = document.createElement("div"); el.className = "capture";
+  el.innerHTML = `<div class="pcard"><div class="pk">${esc(spec.kicker)}</div><div class="ph"><span class="tone" style="background:${toneC}"></span>${esc(spec.headline)}</div>
+    <div class="pbody" style="${wide?"grid-template-columns:1fr":""}"><div>${spec.chartTitle?`<div style="font-size:14px;color:#4A5568;font-weight:600;margin-bottom:4px">${esc(spec.chartTitle)}</div>`:""}${visual}${wide?partial:""}</div>
+    ${!wide?`<div class="pk-list">${spec.kpis.map(([l,v])=>`<div class="pkpi"><div class="l">${esc(l)}</div><div class="v">${esc(v)}</div></div>`).join("")}${partial}</div>`:""}</div>
+    <div class="pfoot"><span><b>Plan:</b> ${esc(S.result.weeks?.[0]||"")} to ${esc(S.result.weeks?.[S.result.horizon-1]||"")}</span><span><b>Sources:</b> ${esc(sources())}</span><span><b>Prepared:</b> ${new Date().toLocaleDateString()}</span><span style="margin-left:auto">Decision support; ERP is the system of record</span></div></div>`;
+  document.body.appendChild(el);
+  let c = null;
+  if(spec.chart){ c = echarts.init(el.querySelector("#pchart"), null, {renderer:"canvas"}); c.setOption(Object.assign({animation:false, textStyle:{fontFamily:"Inter, system-ui, sans-serif"}}, spec.chart)); }
+  if(spec.image) await Promise.all([...el.querySelectorAll("img")].map(i => i.complete ? 0 : new Promise(r => { i.onload = r; i.onerror = r; })));
+  await new Promise(r => setTimeout(r, 120));
+  try{ const canvas = await html2canvas(el.firstElementChild, {scale:1.5, backgroundColor:"#ffffff", logging:false}); return canvas.toDataURL("image/png"); }
+  finally{ c && c.dispose(); el.remove(); }
+}
+async function addCard(id){
+  const def = CARDS[id]; if(!def) return;
+  if(!def.ready()) return toast(def.why || "Fix the data issues first.");
+  toast("Creating card…", 1200);
+  try{
+    const spec = await def.spec();
+    const url = await renderCard(spec);
+    S.briefing.push({id, url, title:def.name, page:def.page, headline:spec.headline});
+    renderNav(); if(S.page === "briefing") render();
+    toast(`Added to briefing (${S.briefing.length} card${S.briefing.length>1?"s":""})`);
+  }catch(e){ console.error(e); toast("Couldn't create the card: " + e.message); }
+}
+function pageBriefing(){
+  const b = S.briefing, groups = {};
+  Object.entries(CARDS).forEach(([id, d]) => (groups[d.page] ||= []).push([id, d]));
+  const counts = {}; b.forEach(c => counts[c.id] = (counts[c.id]||0) + 1);
+  const catalog = !S.state.tabs.length ? `<div class="muted small">Load data to see the available charts.</div>` : Object.entries(groups).map(([page, list]) => `<div class="cat-group"><div class="cat-h">${esc(page)}</div>
+      ${list.map(([id, d]) => { let ok = false; try{ ok = d.ready(); }catch(e){}
+        return `<div class="cat-row"><span>${esc(d.name)}${counts[id]?` <span class="tag blue">${counts[id]} added</span>`:""}</span>${ok?`<button class="btn small" data-action="add-card" data-card="${id}">+ Add</button>`:`<span class="hint">${esc(d.why||"Fix the data issues first")}</span>`}</div>`; }).join("")}</div>`).join("");
+  return head("Share","Briefing","Pick the charts leaders need, put them in order, and export one PDF.", `<button class="btn primary" data-action="brief-pdf" ${b.length?"":"disabled"}>Download PDF</button>`)
+    + `<div class="grid" style="grid-template-columns:330px 1fr;align-items:start">
+      <div class="card"><h3>Available charts</h3><div class="hint" style="margin-bottom:8px">Every chart in the tool can become a card. Cards use the current selections on each page, such as the product or material picked in a chart.</div>${catalog}</div>
+      <div>${b.length ? `<div class="grid g2">${b.map((c,i)=>`<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px"><b class="small">${i+1}. ${esc(c.title)} <span class="muted" style="font-weight:400">· ${esc(c.page)}</span></b>
+          <span><button class="btn small ghost" data-action="brief-up" data-i="${i}" ${i?"":"disabled"} title="Move up">↑</button><button class="btn small ghost" data-action="brief-down" data-i="${i}" ${i<b.length-1?"":"disabled"} title="Move down">↓</button><button class="btn small ghost" data-action="brief-png" data-i="${i}">PNG</button><button class="btn small ghost" data-action="brief-del" data-i="${i}">Remove</button></span></div>
+          <img src="${c.url}" style="width:100%;border:1px solid var(--line);border-radius:6px"></div>`).join("")}</div>
+        <div class="hint" style="margin-top:10px">Cards are snapshots of results when you added them, so they aren't saved in the project file. Recreate them after changing data.</div>`
+      : `<div class="card empty"><h2>No cards yet</h2><p>Add charts from the list, or use the <b>+ Briefing</b> button on any chart in the tool.</p></div>`}</div></div>`;
+}
+async function briefPdf(){
+  const {jsPDF} = window.jspdf; const doc = new jsPDF({orientation:"landscape", unit:"px", format:[1280,720], hotfixes:["px_scaling"]});
+  S.briefing.forEach((c,i) => { if(i) doc.addPage([1280,720], "landscape"); doc.addImage(c.url, "PNG", 0, 0, 1280, 720); });
+  doc.save(fileName().replace(".bomproject.json","") + "-briefing.pdf");
+}
+
+/* ---------- Excel export (full precision) ---------- */
+function exportXlsx(mod){
+  const r = S.result; if(!r || r.blocked) return toast("Nothing to export yet.");
+  const wb = XLSX.utils.book_new(); const add = (name, rows) => XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows.length?rows:[{note:"no rows"}]), name.slice(0,31));
+  const meta = [{Item:"Project",Value:S.state.name},{Item:"Plan",Value:`${r.weeks?.[0]} to ${r.weeks?.[r.horizon-1]}`},{Item:"Sources",Value:sources()},{Item:"Exported",Value:new Date().toISOString()},{Item:"Engine",Value:r.engine},{Item:"Precision",Value:"Full precision, unrounded"}];
+  const L = r.weeks || [];
+  if(mod === "feasibility"){ const f = r.feasibility;
+    add("Weekly plan", f.finished_goods.flatMap(x => x.weeks.map((k,w) => ({"Finished good":x.fg,Week:L[w],Demand:k.demand,"Backlog in":k.backlog_in,Built:k.built,"Built on time":k.on_time,"Backlog filled":k.late_filled,"Short at week end":k.short}))));
+    add("Materials by week", f.materials.flatMap(m => L.map((l,w) => ({Material:m.part,Description:m.description,Unit:m.uom,Week:l,Receipts:m.receipts[w],Required:m.required[w],"Ending balance":m.balance[w],"Coverage to date":m.coverage[w],Status:STATUS_LABEL[m.status[w]]}))));
+    add("Materials summary", f.materials.map(m => ({Material:m.part,Description:m.description,Unit:m.uom,"On hand":m.on_hand,Receipts:m.total_receipts,Required:m.total_required,Shortfall:m.shortfall,"First short week":m.first_short_week?L[m.first_short_week-1]:"","Used in":m.fgs.join(", ")}))); }
+  if(mod === "cost"){ add("By finished good", r.cost.per_fg.map(f=>({"Finished good":f.fg,Demand:f.planned,"Unit material cost":f.unit_cost,"Scrap per unit":f.scrap_cost,"Selling price":f.selling_price,"Material margin":f.margin,"Plan cost":f.plan_cost,"Missing costs":f.missing_costs.join(", ")})));
+    add("Cost lines", r.cost.per_fg.flatMap(f=>f.lines.map(l=>({"Finished good":f.fg,Material:l.part,"Qty per unit":l.qty_per_unit,"Unit cost":l.unit_cost,"Cost per unit":l.cost,"Scrap cost per unit":l.scrap_cost}))));
+    add("Shortfall buy list", r.cost.shortfall_lines.map(l=>({Material:l.part,"First short week":l.first_short_week?L[l.first_short_week-1]:"",Shortfall:l.shortfall,"Unit cost":l.unit_cost,"Cost to cover":l.cost}))); }
+  if(mod === "bom"){ const g = bomGraph(); add("BOM lines", g.edges.map(e=>({Parent:e.source,Child:e.target,"Qty per":e.qty_per,Unit:e.uom,Scrap:e.scrap,"Effective ratio":e.ratio})));
+    add("Parts", g.nodes.map(n=>({Part:n.id,Description:n.description,Type:n.kind,Level:n.level,"Required for plan":n.required}))); }
+  add("About", meta);
+  XLSX.writeFile(wb, `${fileName().replace(".bomproject.json","")}-${mod}.xlsx`);
+}
+
+/* ======================================================================
+   EVENTS (one delegated listener for clicks, one for changes)
+   ====================================================================== */
+function setWeekCell(kind, el){
+  const v = el.value.trim() === "" ? 0 : parseFloat(el.value);
+  if(!Number.isFinite(v) || v < 0) return toast("Enter a number, zero or more.");
+  mutate(st => { st.overrides[kind] ||= {}; (st.overrides[kind][el.dataset.part] ||= {})[el.dataset.w] = kind === "demand" ? Math.round(v) : v; });
+}
+const actions = {
+  nav: el => { S.page = el.dataset.page; closeLayer(); render(); $("#main").scrollTop = 0; },
+  demo: () => { if(S.state.tabs.length && !confirm("Replace the current project with the demo data? Save first if you want to keep it.")) return; loadDemo(); },
+  "add-files": () => $("#file-input").click(),
+  "open-project": () => { closeLayer(); openProject(); }, "save-project": () => saveProject(false), "save-as": () => { closeLayer(); saveProject(true); },
+  "new-project": () => { if(!confirm("Start a new empty project? Unsaved changes in the current one stay only in its file.")) return; S.state = newState(); S.fileHandle = null; idbSet(null, "handle").catch(() => {}); S.savedAt = null; S.briefing = []; closeLayer(); scheduleAutosave(); recompute(); S.page = "data"; render(); },
+  menu: showMenu, close: closeLayer, "close-bg": (el, e) => { if(e.target === el) closeLayer(); },
+  "toggle-map": () => { S.ui.mapOpen = !S.ui.mapOpen; render(); },
+  "toggle-preview": el => { S.ui["prev-"+el.dataset.tab] = !S.ui["prev-"+el.dataset.tab]; render(); },
+  "remove-tab": el => { if(!confirm("Remove this tab from the project?")) return; mutate(st => { st.tabs = st.tabs.filter(t=>t.id!==el.dataset.tab); delete st.mappings[el.dataset.tab]; }); },
+  "fix-alias": el => { const i = S.result.issues.find(x=>x.id===el.dataset.issue); mutate(st => i.fix.from.forEach(f => st.fixes.aliases[f] = i.fix.to)); },
+  "fix-all-alias": () => mutate(st => S.result.issues.filter(i=>i.fix?.type==="alias").forEach(i => i.fix.from.forEach(f => st.fixes.aliases[f] = i.fix.to))),
+  "fix-conv": el => { const v = parseFloat(document.getElementById("cv-"+el.dataset.line).value); if(!(v>0)) return toast("Enter a positive number."); mutate(st => st.fixes.conversions[el.dataset.line] = v); },
+  "fix-qty": el => { const v = parseFloat(document.getElementById("qt-"+el.dataset.line).value); if(!(v>0)) return toast("Enter a positive number."); mutate(st => st.fixes.qty[el.dataset.line] = v); },
+  "fix-exclude": el => mutate(st => st.fixes.excluded.push(el.dataset.line)),
+  "fix-dup": el => mutate(st => { st.fixes.duplicates ||= {}; st.fixes.duplicates[el.dataset.line] = el.dataset.mode; }),
+  "fix-cycle": el => { const v = document.getElementById("cy-"+el.dataset.issue).value; mutate(st => st.fixes.excluded.push(v)); },
+  "undo-fix": el => mutate(st => { const k = el.dataset.kind, key = el.dataset.key; if(k==="alias") delete st.fixes.aliases[key]; else if(k==="excluded") st.fixes.excluded = st.fixes.excluded.filter(x=>x!==key); else delete st.fixes[k][key]; }),
+  "clear-ov": el => { if(el.dataset.field === "receipts") S.ui.extraReceipts = []; mutate(st => st.overrides[el.dataset.field] = {}); },
+  fill: el => showFill(el.dataset.field, JSON.parse(el.dataset.parts)),
+  "fill-save": el => { const f = el.dataset.field; const vals = {}; document.querySelectorAll("[data-fill]").forEach(i => { if(i.value.trim()!=="") vals[i.dataset.fill] = parseFloat(i.value); });
+    const bad = Object.entries(vals).filter(([,v]) => !Number.isFinite(v) || v < 0); if(bad.length) return toast("Numbers only, zero or more: " + bad.map(b=>b[0]).join(", "));
+    closeLayer(); mutate(st => Object.assign(st.overrides[f], vals)); toast(`Saved ${Object.keys(vals).length} values`); },
+  "focus-plan": () => { if(S.page !== "feasibility"){ S.page = "feasibility"; render(); } const c = $("#plan-card"); if(c){ c.scrollIntoView({behavior:"smooth", block:"center"}); c.querySelector("input")?.focus(); } },
+  "rcpt-add": () => { const m = $("#rcpt-new").value; if(!m) return; S.ui.extraReceipts = [...new Set([...(S.ui.extraReceipts||[]), m])]; render(); },
+  trace: el => showTrace(el.dataset.part),
+  sort: el => { const id = el.dataset.table, k = el.dataset.col, cur = S.ui.sort[id]; S.ui.sort[id] = {k, dir: cur?.k===k ? -cur.dir : 1}; render(); },
+  colmenu: el => { S.ui.colmenu = S.ui.colmenu === el.dataset.table ? null : el.dataset.table; render(); },
+  "export-xlsx": el => exportXlsx(el.dataset.module),
+  "add-card": el => addCard(el.dataset.card),
+  "brief-del": el => { S.briefing.splice(+el.dataset.i, 1); render(); },
+  "brief-up": el => { const i = +el.dataset.i; [S.briefing[i-1], S.briefing[i]] = [S.briefing[i], S.briefing[i-1]]; render(); },
+  "brief-down": el => { const i = +el.dataset.i; [S.briefing[i+1], S.briefing[i]] = [S.briefing[i], S.briefing[i+1]]; render(); },
+  "brief-png": el => { const c = S.briefing[+el.dataset.i]; const a = document.createElement("a"); a.href = c.url; a.download = (c.title||"card").replace(/[^\w]+/g,"-") + ".png"; a.click(); },
+  "brief-pdf": () => briefPdf(),
+  "heat-all": () => { S.ui.heatAll = !S.ui.heatAll; render(); },
+  "explorer-view": el => { S.ui.explorerView = el.dataset.v; render(); },
+  "tree-orient": () => { S.ui.treeOrient = S.ui.treeOrient === "TB" ? "LR" : "TB"; render(); },
+  "explorer-reset": () => { S.cy?.elements().removeClass("faded hl"); $("#explorer-side").innerHTML = ""; },
+};
+document.addEventListener("click", e => {
+  if(S.ui.colmenu && !e.target.closest(".colmenu")){ S.ui.colmenu = null; render(); return; }
+  const el = e.target.closest("[data-action]"); if(!el || !actions[el.dataset.action]) return;
+  try{ actions[el.dataset.action](el, e); }catch(err){ console.error(err); toast(err.message); }
+});
+const changes = {
+  rename: el => mutate(st => st.name = el.value.trim() || "Untitled project", {silent:true}),
+  "tab-kind": el => mutate(st => st.mappings[el.dataset.tab] = call("map_columns", st.tabs.find(t=>t.id===el.dataset.tab), el.value)),
+  "map-col": el => mutate(st => { const m = st.mappings[el.dataset.tab]; if(el.value) m.columns[el.dataset.field] = el.value; else delete m.columns[el.dataset.field]; }),
+  "map-root": el => mutate(st => { st.mappings[el.dataset.tab].root = el.value.trim(); st.mappings[el.dataset.tab].root_guessed = false; }),
+  "alias-target": el => { if(!el.value) return; const i = S.result.issues.find(x=>x.id===el.dataset.issue); mutate(st => i.parts.filter(p=>p!==el.value).forEach(p => st.fixes.aliases[p] = el.value)); },
+  "demand-cell": el => setWeekCell("demand", el),
+  "receipt-cell": el => setWeekCell("receipts", el),
+  "weekly-fg": el => { S.ui.weeklyFg = el.value; render(); },
+  "balance-mat": el => { S.ui.balanceMat = el.value; render(); },
+  "col-toggle": el => { const t = el.dataset.table; S.state.settings.columns[t] ||= {}; S.state.settings.columns[t][el.dataset.col] = el.checked; scheduleAutosave(); render(); },
+  "cost-fg": el => { S.ui.costFg = el.value; render(); },
+  "explorer-fg": el => { S.ui.explorerFg = el.value; S.graph = null; render(); },
+  decimals: el => { closeLayer(); mutate(st => st.settings.decimals = +el.value); },
+};
+document.addEventListener("change", e => { const el = e.target.closest("[data-change]"); if(!el || !changes[el.dataset.change]) return;
+  try{ changes[el.dataset.change](el, e); }catch(err){ console.error(err); toast(err.message); } });
+document.addEventListener("keydown", e => { if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="s"){ e.preventDefault(); saveProject(false); } if(e.key==="Escape") closeLayer(); });
+$("#file-input").addEventListener("change", e => { addFiles([...e.target.files]); e.target.value = ""; });
+$("#project-input").addEventListener("change", async e => { const f = e.target.files[0]; if(f) await loadProjectText(await f.text()); e.target.value = ""; });
+boot();
+</script>
+</body>
+</html>

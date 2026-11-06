@@ -1,3 +1,9 @@
+- title: FDA Compliance Data Pipeline
+  tags: Alteryx · Tableau
+  summary: Cleans and reconciles about 645K FDA records into validated, Tableau-ready fact tables.
+  url: /fda-compliance-pipeline
+  featured: true
+  
 - title: PR Real Estate Intelligence Agent
   tags: Langflow · RAG · SQL
   summary: Plain-English property searches in under a minute, replacing hour-long manual searches.
@@ -8,12 +14,6 @@
   tags: Neo4j · Cypher · GDS
   summary: Reveals how physician referral networks drive prescribing that CRM data can't see.
   url: /commercial-graph-case-study
-  featured: true
-
-- title: FDA Compliance Data Pipeline
-  tags: Alteryx · Tableau
-  summary: Cleans and reconciles about 645K FDA records into validated, Tableau-ready fact tables.
-  url: /fda-compliance-pipeline
   featured: true
 
 - title: Automated Leadership Reporting Pipeline

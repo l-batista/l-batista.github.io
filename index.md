@@ -25,7 +25,7 @@ workforce and business data into decisions. My current focus is knowledge manage
 
 ## Featured Tools
 
-{% include project-cards.html projects=site.data.tools link_text="Explore the tool" %}
+{% include project-cards.html projects=site.data.tools link_text="Explore the tool" carousel=true %}
 
 <script>
 document.querySelectorAll('.is-carousel').forEach(function (c) {

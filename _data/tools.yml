@@ -6,5 +6,6 @@
 
 - title: BOM Exploder & Inventory Gap Analyzer
   tags: Python · Pyodide
-  summary: Explodes multi-level bills of materials to flag inventory gaps, risk, and cost across scenarios.
-  status: coming
+  summary: Plans 4 weeks of demand against stock and open POs across multi-level BOMs, flagging the week each material runs short and the cost to close the gap.
+  url: /bom-gap-analyzer
+  featured: true

@@ -1,4 +1,5 @@
 ---
+permalink: /slide-automation-tool/
 layout: page
 title: Slide Automation Tool
 subtitle: A PowerPoint reporting tool built with AI

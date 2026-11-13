@@ -18,7 +18,7 @@
   
 - title: The Records Vault (SQL Dungeon)
   tags: SQL · Three.js · Game design
-  summary: A self-paced 3D dungeon where every door opens with a real SQL query on HR data.
+  summary: A self-paced 3D dungeon where every door opens with a real SQL query on fake HR data.
   url: /records-vault
   featured: true
 

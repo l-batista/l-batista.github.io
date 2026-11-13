@@ -15,6 +15,12 @@
   summary: Reveals how physician referral networks drive prescribing that CRM data can't see.
   url: /commercial-graph-case-study
   featured: true
+  
+- title: The Records Vault (SQL Dungeon)
+  tags: SQL · Three.js · Game design
+  summary: A self-paced 3D dungeon where every door opens with a real SQL query on HR data.
+  url: /records-vault
+  featured: true
 
 - title: Automated Leadership Reporting Pipeline
   tags: Visier · Power Query · Copilot

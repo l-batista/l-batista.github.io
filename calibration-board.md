@@ -4,6 +4,9 @@ title: Calibration Board
 subtitle: A live performance calibration tool built with AI
 ---
 
+[← Back to home](/)
+
+
 **[HTML · JavaScript · Claude]**
 
 [Open the tool](/assets/css/calibration-board.html) · <a href="/assets/css/calibration-board.html" download>Download it</a> (single HTML file, opens in any browser, no install)
@@ -104,3 +107,5 @@ You don't need to be a developer to do this. You do need to know the work well e
 ## Try it for yourself
 
 [Open Calibration Board](/assets/css/calibration-board.html) in your browser, or <a href="/assets/css/calibration-board.html" download>download the file</a> to run it from your desktop. It opens with sample data so you can try every feature before loading your own file. All names in the sample and screenshots are fictional.
+
+[← Back to home](/)

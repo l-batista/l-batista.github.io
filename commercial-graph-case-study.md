@@ -90,3 +90,5 @@ Python (Faker) · Neo4j AuraDB · Cypher · Neo4j Graph Data Science Library
 
 ## What's Next
 The next phase of this project connects a document knowledge layer, product one-pagers, competitive battlecards, and payer access notes, into the same graph, with the goal of powering a GraphRAG-based sales agent that can answer field rep questions using both structured account data and unstructured reference material in a single query. That phase has not been built yet.
+
+[← Back to home](/)

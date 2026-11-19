@@ -72,3 +72,5 @@ combined with the other tools the agent can use.
 
 ## Tech Stack
 Python · SQLite · FAISS · RAG · Langflow · LLM agents
+
+[← Back to home](/)

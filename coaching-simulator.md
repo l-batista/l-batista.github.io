@@ -135,6 +135,6 @@ Built with Llama. Llama 3.2 is licensed under the Llama 3.2 Community License, C
 
 ## What's Next
 
-The next step is a corporate version that records results automatically. Scores would flow through the company's learning platform (xAPI) or a Power Automate flow into a database, so L&D teams can see whether managers' coaching skills improve across repeat attempts. I'd also like to add scenarios written with HR business partners, such as a difficult performance rating conversation and a return-from-leave check-in.
+One possible direction, not a committed plan, is a corporate version that records results automatically. Scores could flow through the company's learning platform (xAPI) or a Power Automate flow into a database, so L&D teams can see whether managers' coaching skills improve across repeat attempts. It could also include scenarios written with HR business partners, such as a difficult performance rating conversation and a return-from-leave check-in.
 
 [Try the Coaching Practice Lab](/assets/css/coaching-simulator.html) · [← Back to home](/)

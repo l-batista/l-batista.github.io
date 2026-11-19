@@ -1,0 +1,1555 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halvern Coaching Practice Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--red:#C8102E;--red-dark:#A30D25;--black:#111111;--gray:#F2F2F2;--line:#E4E4E4;--muted:#4A4A4A}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:Inter,system-ui,sans-serif;color:var(--black);background:var(--gray)}
+button{font-family:inherit;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.hidden{display:none !important}
+.topbar{height:64px;background:var(--black);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px;gap:16px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .sq{width:18px;height:18px;background:var(--red)}
+.brand .wm{font-weight:700;font-size:16px;letter-spacing:3px}
+.brand .sub{font-size:14px;color:#D6D6D6;margin-left:10px}
+.iconbtn{width:40px;height:40px;border-radius:8px;border:1px solid #555;background:transparent;color:#fff;display:flex;align-items:center;justify-content:center}
+.page{max-width:1100px;margin:0 auto;padding:40px 28px 60px;display:flex;flex-direction:column;gap:24px}
+.card{background:#fff;border-radius:12px;padding:28px}
+.kicker{font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--red)}
+h1{margin:0;font-size:30px}
+h2{margin:0;font-size:20px}
+p{line-height:1.55}
+.btn{height:48px;padding:0 24px;border-radius:8px;border:none;font-size:15px;font-weight:600}
+.btn-red{background:var(--red);color:#fff}
+.btn-black{background:var(--black);color:#fff}
+.btn-outline{background:#fff;color:var(--black);border:1.5px solid var(--black)}
+.progress{height:10px;background:var(--line);border-radius:5px;overflow:hidden}
+.progress>div{height:100%;background:var(--red);width:0;transition:width .3s}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+select,input[type=text],input[type=password]{font-family:inherit;font-size:15px;height:44px;padding:0 12px;border:1.5px solid #BDBDBD;border-radius:8px;background:#fff;color:var(--black)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.scen{background:#fff;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:10px;border:2px solid transparent}
+.scen.active{border-color:var(--red)}
+.scen.locked{opacity:.55}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--gray);color:var(--muted)}
+.seg{display:inline-flex;border:1.5px solid var(--black);border-radius:8px;overflow:hidden}
+.seg button{border:none;background:#fff;padding:0 16px;height:40px;font-size:14px;font-weight:600}
+.seg button.on{background:var(--black);color:#fff}
+ul.facts{margin:0;padding-left:20px;line-height:1.7}
+/* scene stage */
+#screen-scene{position:fixed;inset:0;background:#1b1b1b;overflow:hidden}
+#stageWrap{position:absolute;left:0;top:0;width:1440px;height:900px;transform-origin:0 0}
+#stage{position:absolute;inset:0;overflow:hidden}
+#stage svg.scene{position:absolute;inset:0}
+.hud{position:absolute;top:0;left:0;right:0;height:64px;background:rgba(17,17,17,.9);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px;gap:20px;z-index:5}
+.tracker{display:flex;align-items:center;gap:8px;font-size:13px}
+.tracker .st{padding:6px 12px;border-radius:999px;border:1px solid #777;color:#D6D6D6}
+.tracker .st.done{background:#fff;color:var(--black);border-color:#fff;font-weight:600}
+.tracker .st.cur{background:var(--red);color:#fff;border-color:var(--red);font-weight:600}
+.tracker .ln{width:24px;height:2px;background:#666}
+.tracker .ln.done{background:var(--red)}
+.caption{position:absolute;top:88px;left:28px;background:var(--black);color:#fff;padding:10px 16px;border-left:4px solid var(--red);display:flex;flex-direction:column;gap:2px;z-index:4}
+.caption .k{font-size:12px;font-weight:600;letter-spacing:1.5px;color:#FF8A9B}
+.caption .t{font-size:15px;font-weight:600}
+.bubble{position:absolute;left:280px;top:250px;width:370px;background:#fff;border-radius:16px;padding:18px 22px;box-shadow:0 6px 24px rgba(0,0,0,.14);display:flex;flex-direction:column;gap:6px;z-index:4}
+.bubble .nm{font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--red)}
+.bubble .tx{font-size:19px;line-height:1.45;min-height:28px}
+.bubble .tail{position:absolute;right:-10px;top:40px;width:20px;height:20px;background:#fff;transform:rotate(45deg)}
+.dots span{display:inline-block;width:8px;height:8px;margin-right:6px;border-radius:50%;background:#999;animation:dot 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.inputbar{position:absolute;left:220px;right:220px;bottom:28px;background:rgba(255,255,255,.97);border-radius:16px;padding:16px 20px;display:flex;align-items:flex-end;gap:14px;box-shadow:0 8px 30px rgba(0,0,0,.2);z-index:5}
+.inputbar .col{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.inputbar label{font-size:12px;font-weight:700;letter-spacing:1.2px;color:var(--muted)}
+.inputbar label.live{color:var(--red-dark)}
+.inputbar textarea{font-family:inherit;font-size:17px;line-height:1.45;padding:10px 12px;border:1.5px solid var(--black);border-radius:8px;resize:none;color:var(--black)}
+.mic{width:56px;height:56px;border-radius:50%;border:1.5px solid var(--red);background:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+.mic.on{background:var(--red);animation:pulse 1.6s infinite}
+.mic.on svg{stroke:#fff}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(200,16,46,.5)}70%{box-shadow:0 0 0 16px rgba(200,16,46,0)}100%{box-shadow:0 0 0 0 rgba(200,16,46,0)}}
+.chip{font-size:13px;font-weight:600;color:var(--red-dark);background:#FFF0F2;padding:8px 12px;border-radius:6px;flex:none;align-self:center}
+.wrapbtn{position:absolute;right:240px;bottom:176px;z-index:6}
+#fade{position:absolute;inset:0;background:#111;opacity:0;pointer-events:none;transition:opacity .45s;z-index:9;display:flex;align-items:center;justify-content:center}
+#fade.show{opacity:1;pointer-events:auto}
+#fade .card2{color:#fff;text-align:center;display:flex;flex-direction:column;gap:8px}
+#fade .card2 .k{font-size:14px;letter-spacing:2px;color:#FF8A9B;font-weight:700}
+#fade .card2 .t{font-size:34px;font-weight:700}
+.eyes{transform-box:fill-box;transform-origin:center;animation:blink 5s infinite}
+.bodyg{animation:breathe 4.5s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+/* modal */
+.modalbg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;border-radius:12px;padding:28px;width:min(520px,92vw);display:flex;flex-direction:column;gap:16px;max-height:90vh;overflow:auto}
+details summary{cursor:pointer;font-weight:600;font-size:14px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:14px}
+/* report */
+.rep-head{background:#fff;border-radius:12px;overflow:hidden}
+.rep-head .strip{height:8px;background:var(--red)}
+.rep-head .in{padding:24px 28px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between}
+.stat{border-radius:10px;padding:16px 24px;display:flex;flex-direction:column;gap:4px;min-width:150px}
+.stat .l{font-size:12px;letter-spacing:1.2px}
+.stat .v{font-size:34px;font-weight:700}
+.variantline{border-top:1px solid var(--line);padding:14px 28px;font-size:14px;background:#FFF7F8}
+.row2{display:flex;flex-wrap:wrap;gap:24px}
+.row2>*{flex:1 1 420px}
+.scorerow{display:grid;grid-template-columns:150px minmax(0,1fr) 36px;gap:12px;align-items:center}
+.bar{height:10px;background:var(--line);border-radius:5px;overflow:hidden}
+.bar>div{height:100%;border-radius:5px}
+.item{display:flex;gap:12px}
+.item .mk{width:8px;flex:none;border-radius:4px}
+.item p{margin:0;font-size:15px}
+.rw{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.rw>div{background:var(--gray);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.rw>div.good{background:#FFF7F8;border:1.5px solid var(--red)}
+.rw .h{font-size:12px;font-weight:600;letter-spacing:1.2px;color:var(--muted)}
+.rw .good .h{color:var(--red-dark)}
+.rw p{margin:0;font-size:15px}
+.spin{width:40px;height:40px;border:4px solid var(--line);border-top-color:var(--red);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media print{
+  body{background:#fff}
+  .topbar,.noprint{display:none !important}
+  .page{padding:0;max-width:none}
+  .card,.rep-head{break-inside:avoid;border:1px solid #ddd}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<!-- top bar used on non-scene screens -->
+<header class="topbar" id="topbar">
+  <div class="brand"><div class="sq"></div><span class="wm">HALVERN</span><span class="sub">Leadership Academy  |  Coaching Practice Lab</span></div>
+  <button class="iconbtn" id="btnSettings" aria-label="Settings">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+  </button>
+</header>
+
+<!-- SETUP -->
+<section id="screen-setup" class="page">
+  <div class="card" style="display:flex;flex-direction:column;gap:16px">
+    <span class="kicker">COACHING PRACTICE LAB</span>
+    <h1>Practice a simulated coaching conversation</h1>
+    <p class="muted" style="margin:0">You talk with an AI employee by voice or text. They react to how you coach, and you get a scored feedback report at the end. Everything runs in your browser.</p>
+  </div>
+  <div class="card" style="display:flex;flex-direction:column;gap:16px" id="setupCard">
+    <h2>Load the AI model</h2>
+    <p id="gpuStatus" class="small muted" style="margin:0">Checking your browser...</p>
+    <div class="field" id="modelField">
+      <label for="modelSelect">Model</label>
+      <select id="modelSelect">
+        <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama 3.2 3B (recommended, about 2 GB download)</option>
+        <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Qwen 2.5 1.5B (lighter, about 1 GB)</option>
+        <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">Llama 3.2 1B (fastest, weakest)</option>
+      </select>
+      <p id="modelHelp" class="small" style="margin:0;background:var(--gray);border-radius:8px;padding:12px 14px;line-height:1.5"></p>
+      <span class="small muted">Why there are options: larger models play the employee more naturally and follow the scenario more closely, but they take longer to download and need a stronger computer. If replies feel slow or the model fails to load, pick a smaller one. The first load downloads the model once; after that it loads from your browser's storage.</span>
+    </div>
+    <div id="loadBox" class="hidden" style="display:flex;flex-direction:column;gap:8px">
+      <div class="progress"><div id="loadBar"></div></div>
+      <span id="loadText" class="small muted">Starting...</span>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-red" id="btnLoad">Load model and continue</button>
+      <button class="btn btn-outline hidden" id="btnUseApi">Continue with API</button>
+    </div>
+    <p class="small muted" style="margin:0;border-top:1px solid var(--line);padding-top:14px">Built with Llama. Llama 3.2 is licensed under the Llama 3.2 Community License, Copyright © Meta Platforms, Inc. All Rights Reserved. Qwen 2.5 1.5B is licensed under Apache 2.0.</p>
+    <p id="loadErr" class="small hidden" style="margin:0;color:var(--red-dark)"></p>
+  </div>
+</section>
+
+<!-- SELECT -->
+<section id="screen-select" class="page hidden">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:6px"><span class="kicker">CHOOSE A SCENARIO</span><h1>Who are you meeting with today?</h1></div>
+    <div style="display:flex;align-items:center;gap:10px"><span class="small muted">Difficulty</span>
+      <div class="seg" role="group" aria-label="Difficulty"><button id="dStd" class="on">Standard</button><button id="dHard">Challenging</button></div></div>
+  </div>
+  <p id="diffNote" class="small muted" style="margin:-8px 0 0;text-align:right">Standard: the employee starts cautious but willing to talk, and opens up as you build trust.</p>
+  <div class="grid2" id="scenarioGrid"></div>
+</section>
+
+<!-- BRIEF -->
+<section id="screen-brief" class="page hidden">
+  <div class="card" style="display:flex;flex-direction:column;gap:14px">
+    <span class="kicker" id="briefKicker"></span>
+    <h1 id="briefTitle"></h1>
+    <p class="muted" style="margin:0" id="briefIntro"></p>
+  </div>
+  <div class="row2">
+    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+      <h2>What you know</h2>
+      <ul class="facts" id="briefFacts"></ul>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+      <h2>Your goal</h2>
+      <p style="margin:0" id="briefGoal"></p>
+      <h2 style="margin-top:8px">How it works</h2>
+      <ul class="facts small">
+        <li>Speak with the mic button or type. Press Enter to send.</li>
+        <li>You have 10 turns across three scenes: Arrive, Talk and Commit.</li>
+        <li id="briefReacts"></li>
+        <li id="briefPlay"></li>
+      </ul>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px"><button class="btn btn-red" id="btnStart">Start conversation</button><button class="btn btn-outline" id="btnBackSelect">Back</button></div>
+</section>
+
+<!-- SCENE -->
+<section id="screen-scene" class="hidden">
+  <div id="stageWrap">
+    <div id="stage">
+      <div id="sceneSvg"></div>
+      <div class="hud">
+        <div class="brand"><div class="sq"></div><span class="wm">HALVERN</span><span class="sub" id="hudSub"></span></div>
+        <div class="tracker" id="tracker"></div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <span id="turnLabel" style="font-size:14px;color:#D6D6D6">Turn 1 of 10</span>
+          <button id="btnEnd" style="font-size:13px;font-weight:600;height:36px;padding:0 16px;border-radius:6px;border:1px solid #fff;background:transparent;color:#fff">End conversation</button>
+        </div>
+      </div>
+      <div class="caption" id="caption"><span class="k" id="capK">SCENE 1</span><span class="t" id="capT"></span></div>
+      <div class="bubble" id="bubble"><span class="nm" id="bubbleName"></span><span class="tx" id="bubbleText"></span><div class="tail"></div></div>
+      <button class="btn btn-red wrapbtn hidden" id="btnWrap">Wrap up and see your report</button>
+      <div class="inputbar">
+        <button class="mic" id="btnMic" aria-label="Speak your reply">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+        </button>
+        <div class="col">
+          <label for="reply" id="replyLabel">YOUR REPLY · TAP THE MIC OR TYPE</label>
+          <textarea id="reply" rows="2" placeholder="Say something..."></textarea>
+        </div>
+        <span class="chip hidden" id="turnsChip"></span>
+        <button class="btn btn-red" id="btnSend" style="height:52px">Send</button>
+      </div>
+      <div id="fade"><div class="card2"><span class="k" id="fadeK"></span><span class="t" id="fadeT"></span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- LOADING REPORT -->
+<section id="screen-loading" class="page hidden" style="align-items:center;justify-content:center;min-height:60vh">
+  <div class="spin"></div>
+  <h2>Preparing your feedback report</h2>
+  <p class="muted" id="loadingNote" style="margin:0">Reviewing your conversation...</p>
+</section>
+
+<!-- REPORT -->
+<section id="screen-report" class="page hidden"></section>
+
+<!-- SETTINGS MODAL -->
+<div class="modalbg hidden" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <div class="modal">
+    <h2 id="setTitle">Settings</h2>
+    <p class="small muted" style="margin:0">By default the simulator runs on a model inside your browser, and nothing you say leaves your computer.</p>
+    <details id="advanced">
+      <summary>Advanced</summary>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px">
+        <p class="small muted" style="margin:0">Optional: use a cloud model instead. Your key stays in this tab's memory and is never saved. Using an API sends your conversation to that provider.</p>
+        <div class="field"><label for="apiProvider">Provider</label>
+          <select id="apiProvider"><option value="anthropic">Anthropic</option><option value="openai">OpenAI</option></select></div>
+        <div class="field"><label for="apiKey">API key</label><input type="password" id="apiKey" autocomplete="off" placeholder="Paste key"></div>
+        <div class="field"><label for="apiModel">Model name</label><input type="text" id="apiModel" placeholder="claude-sonnet-5-5"></div>
+        <div class="field"><label for="apiRoute">Use the API for</label>
+          <select id="apiRoute"><option value="all">Everything</option><option value="report">Feedback report only</option></select></div>
+      </div>
+    </details>
+    <div style="display:flex;gap:12px;justify-content:flex-end"><button class="btn btn-black" id="btnSettingsSave">Done</button></div>
+  </div>
+</div>
+
+<!-- END MODAL -->
+<div class="modalbg hidden" id="endModal" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+  <div class="modal">
+    <h2 id="endTitle">End the conversation?</h2>
+    <p class="muted" id="endText" style="margin:0">You'll get your feedback report based on what you've said so far.</p>
+    <div style="display:flex;gap:12px;justify-content:flex-end">
+      <button class="btn btn-outline" id="btnEndCancel">Keep talking</button>
+      <button class="btn btn-red" id="btnEndConfirm">See my report</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* =========================================================
+   1. SCENARIO CONFIG
+   ========================================================= */
+const S1 = {
+  id:'s1', num:1, title:'Underperformer check-in',
+  employee:{ name:'Kwame Asante', first:'Kwame', pron:'he', role:'Senior Analyst, Client Reporting', tenure:'four years',
+    traits:'conscientious, proud of his work, a bit reserved, does not like to look like he is struggling',
+    speech:'calm, polite, short sentences, sounds a little tired',
+    look:{ skin:'#6B4428', skinD:'#5C3A21', hair:'short', hairColor:'#141414', beard:true, top:'#33476E', topD:'#2C3E61', collar:'v', lip:'#B06A55', nose:'#4A2E1B', brow:'#141414' } },
+  who:'Kwame Asante, Senior Analyst',
+  blurb:'A strong performer has missed two deadlines and made QA errors. Find out why and agree on a plan.',
+  intro:'Kwame Asante is a Senior Analyst on your Client Reporting team. He has been with Halvern for four years and has always been one of your most dependable people.',
+  facts:[
+    'He missed two deadlines in the last six weeks: the Henderson deck and the Q3 client summary.',
+    'Three QA errors were caught on his client reports this month.',
+    'Before this, he had a consistent record of on-time, accurate work.',
+    'He has not raised any concerns with you.'
+  ],
+  goal:'Understand what changed for Kwame and agree on a plan you can both commit to.',
+  playNote:'The real reason behind the slip changes each time you play.',
+  situation:'Kwame, a strong analyst, recently missed two deadlines and made QA errors, which is unusual for him.',
+  revealPhrase:'the real reason behind the slip',
+  vague:'"it\'s been a lot lately" or "I\'m handling it"', guardedMood:'defensive and a bit embarrassed',
+  opening:'Oh, hey. Did you need something?',
+  start:{ standard:{trust:45, openness:40}, challenging:{trust:30, openness:25} },
+  known:'You know you missed two deadlines (the Henderson deck and the Q3 client summary) and that a few QA errors were caught on your reports. You feel bad about it.',
+  scenes:[
+    { key:'arrive', label:'Arrive', caption:"Kwame's desk, 9:30 AM", bg:'desk', desc:'Your manager has just walked up to your desk in the open office. Coworkers are nearby.' },
+    { key:'talk', label:'Talk', caption:'Small meeting room 2A', bg:'room', desc:'You are now in a small private meeting room with your manager.' },
+    { key:'commit', label:'Commit', caption:'Meeting room 2A, wrapping up', bg:'room', opts:{ commit:true }, desc:'The conversation is wrapping up in the meeting room. Your manager may be working toward next steps.' }
+  ],
+  variants:[
+    { id:'A', label:'Caring for a parent after surgery',
+      hint:'There is "family stuff" going on at home. You can say that much, but no details yet.',
+      full:'Your mother had hip surgery five weeks ago and you are her main caregiver. You drive her to physical therapy twice a week and you are not sleeping well. You were embarrassed to ask for flexibility.',
+      unrevealed:"Kwame's mother had hip surgery five weeks ago and he has become her main caregiver, driving her to therapy and sleeping poorly. He was embarrassed to ask for flexibility.",
+      needs:'a few weeks of flexible hours or adjusted deadlines',
+      mock:{ guarded:"I'd rather not get into it. I'll fix the errors.", neutral:"It's been a lot lately. I'm handling it.", hint:"Honestly, there's some family stuff going on at home.", full:"My mom had surgery a few weeks ago. I'm driving her to therapy and I'm not sleeping much. I didn't want to ask for special treatment.", plan:"That would really help. Maybe shifting the Henderson follow-ups by a week?" } },
+    { id:'B', label:'Burned out from absorbing a departed teammate\'s work',
+      hint:'The workload has been heavy lately. You can say that much, but not how heavy or why.',
+      full:'Since Tomás left the team two months ago, you quietly took over his two client accounts on top of your own. You have been working until 10 PM most nights and you are exhausted, but you did not want to complain.',
+      unrevealed:"When Tomás left two months ago, Kwame quietly took over his two client accounts on top of his own. He has been working until 10 PM most nights and is exhausted, but didn't want to complain.",
+      needs:'help redistributing the extra accounts',
+      mock:{ guarded:"It's fine. I'll get it done.", neutral:"It's been a busy stretch, that's all.", hint:"The workload's been heavier than usual lately.", full:"Since Tomás left I've been covering his two accounts too. I'm here until ten most nights. I didn't want it to sound like complaining.", plan:"If someone could take one of those accounts, I could get back on track." } },
+    { id:'C', label:'Conflicting priorities from a new stakeholder',
+      hint:'Priorities have been "a bit messy" lately. You can say that much, but not who or why.',
+      full:'A new VP in Sales, Renée Okafor, has been sending you urgent ad hoc requests directly and telling you they come first. You did not know if you were allowed to push back, so the client reports slipped.',
+      unrevealed:'A new Sales VP, Renée Okafor, has been sending Kwame urgent requests directly and telling him they come first. He didn\'t know whether he could push back, so the client reports slipped.',
+      needs:'clarity on priorities and someone to route the VP requests through',
+      mock:{ guarded:"I don't really want to point fingers.", neutral:"Things have been pulling in a few directions.", hint:"Priorities have been a bit messy lately.", full:"Renée from Sales keeps sending me urgent requests and says they come first. I didn't know if I could say no, so the client work slipped.", plan:"If her requests went through you first, that would help a lot." } }
+  ],
+  exemplars:{
+    advice:"Before we talk about fixes, what do you think has been getting in the way?",
+    advicePlan:"What do you think would help most over the next two weeks? I have a couple of ideas too, but I'd like to hear yours first.",
+    closedPlan:'What would a good first step look like for you this week, and when should we check in?',
+    closed:"What's been different for you over the last few weeks?",
+    blame:"I've noticed a couple of deadlines slipped, which isn't like you. What's been going on?",
+    threat:"I want to understand what's happening so we can sort it out together. What's been making things harder?",
+    none:"That sounds like a lot to carry. Can you tell me more about it?"
+  }
+};
+
+
+const S2 = {
+  id:'s2', num:2, title:'Career development talk',
+  employee:{ name:'Priya Raman', first:'Priya', pron:'she', role:'Analyst II, Market Insights', tenure:'two years',
+    traits:'ambitious, sharp, direct, a little impatient, cares a lot about fairness',
+    speech:'confident and quick, polite but pointed when she feels unheard',
+    look:{ skin:'#9A6040', skinD:'#8A5536', hair:'long', hairColor:'#141414', top:'#1F6F6B', topD:'#185A57', collar:'neck', lip:'#7A3A30', nose:'#6E4128', earring:'#E2B53C', brow:'#141414' } },
+  who:'Priya Raman, Analyst II',
+  blurb:'Priya wants a promotion she is not ready for yet. Be honest about the gap and help her own a plan.',
+  intro:'Priya Raman is an Analyst II on your Market Insights team. She has been with Halvern for two years and earned an Exceeds rating last cycle.',
+  facts:[
+    'She asked you to support her promotion to Senior Analyst in the next cycle.',
+    'Her analysis is strong and her work is consistently accurate.',
+    'She has not yet led a stakeholder meeting on her own. Senior leaders still go to her lead for answers.',
+    'Ana, who joined at the same time, was promoted to Senior last cycle.'
+  ],
+  goal:'Help Priya see the gap to Senior honestly and leave with development steps she owns and a timeline.',
+  playNote:'What is really behind her push for promotion changes each time you play.',
+  situation:'Priya, a strong analyst two years in, wants a promotion to Senior that she is not ready for yet, mainly because she has not led stakeholder meetings.',
+  revealPhrase:'what is really behind her push for promotion',
+  vague:'"I just feel ready" or "my work speaks for itself"', guardedMood:'frustrated and a little defensive',
+  keyMove:{ rx:/\b(stakeholder|lead(ing)? (the |a )?(meeting|readout|presentation)|present(ing|ation)?|the gap|not (quite |yet )?ready|criteria|expectations?|what senior (looks like|requires|means))\b/i, miss:'You never named the gap to Senior honestly, such as leading stakeholder meetings (Reality).' },
+  opening:'Hey, do you have a minute? I wanted to ask where things stand on the Senior role.',
+  start:{ standard:{trust:45, openness:45}, challenging:{trust:30, openness:25} },
+  known:'You asked your manager to support your promotion to Senior Analyst. Your analysis is strong and you got an Exceeds rating last cycle, so you feel ready.',
+  scenes:[
+    { key:'arrive', label:'Arrive', caption:'Coffee bar, 10:15 AM', bg:'coffee', desc:'You walked up to your manager at the office coffee bar to ask about the Senior role. Other people are around.' },
+    { key:'talk', label:'Talk', caption:'Meeting room 4B, 2:00 PM', bg:'room', desc:'You are now in a private meeting room with your manager.' },
+    { key:'commit', label:'Commit', caption:'Meeting room 4B, wrapping up', bg:'room', opts:{ commit:true, board:'Development plan' }, desc:'The conversation is wrapping up. Your manager may be working toward next steps.' }
+  ],
+  variants:[
+    { id:'A', label:'Feels passed over after a peer\'s promotion and is quietly interviewing',
+      hint:'You feel it was unfair that Ana was promoted before you. You can say that much.',
+      full:'You have had two interviews at another company in the last month because you felt passed over when Ana was promoted. You would rather stay if you saw a real path here.',
+      unrevealed:'Priya has had two interviews elsewhere this month because she felt passed over when Ana was promoted. She would rather stay if she saw a real path at Halvern.',
+      needs:'a concrete promotion plan with milestones and a date to revisit it',
+      mock:{ guarded:"I just want to know if it's happening or not.", neutral:"I think my work speaks for itself.", hint:"Honestly, it stung when Ana got promoted and I didn't.", full:"I'll be honest, I've talked to another company. I'd rather stay, but I need to see a real path here.", plan:"If I could lead the next client readout, that would be a real start." } },
+    { id:'B', label:'Doesn\'t know what Senior actually requires',
+      hint:'You are not totally sure what the Senior level expects beyond doing great analysis. You can admit you are a bit unsure.',
+      full:'Nobody has ever explained the Senior criteria to you. You assumed great analysis was enough, and you feel embarrassed that you might have been working on the wrong things.',
+      unrevealed:'Nobody had ever explained the Senior criteria to Priya. She assumed great analysis was enough and was embarrassed that she might have been focusing on the wrong things.',
+      needs:'a clear explanation of the Senior criteria and a chance to practice leading a stakeholder meeting',
+      mock:{ guarded:"I've done everything that's been asked of me.", neutral:"I feel like I'm ready.", hint:"To be honest, I'm not totally sure what Senior looks like beyond great analysis.", full:"No one's ever walked me through the Senior criteria. I thought the analysis was what counted.", plan:"Could I run the stakeholder part of the next project, with you there as backup?" } },
+    { id:'C', label:'Wants to move toward a product role',
+      hint:'You are not sure the Senior Analyst path is what you want long term. You can hint at that.',
+      full:'What you really want is to move into a product management role. You pushed for Senior because it felt like the only way up, and you were nervous to say you want something different.',
+      unrevealed:'Priya really wants to move into product management. She pushed for Senior because it felt like the only way up and was nervous to say she wants something different.',
+      needs:'a conversation about a product rotation or shadowing a product manager',
+      mock:{ guarded:"I just want to keep moving up.", neutral:"Senior seemed like the logical next step.", hint:"I'm honestly not sure the analyst track is where I want to end up.", full:"What I really want is product. Senior just felt like the only way up.", plan:"Shadowing a product manager for a quarter would be amazing." } }
+  ],
+  exemplars:{
+    advice:'Before I share my view, how do you see your readiness for Senior right now?',
+    advicePlan:'What do you think would help you build that stakeholder experience next quarter? I have ideas too, but I\'d like to hear yours first.',
+    closed:'What does moving to Senior mean to you?',
+    closedPlan:'What\'s one development step you want to commit to first, and by when?',
+    blame:'I\'ve noticed senior leaders still go to your lead for answers. What\'s your take on that?',
+    threat:'I want to help you get there. What do you see as the gap right now?',
+    none:'Tell me more about what\'s behind that.'
+  }
+};
+
+const S3 = {
+  id:'s3', num:3, title:'Stuck high performer',
+  employee:{ name:'Hiroshi Tanaka', first:'Hiroshi', pron:'he', role:'Lead Engineer, Platform', tenure:'six years',
+    traits:'thoughtful, reserved, very capable, dislikes office politics, does not like to complain',
+    speech:'measured and dry, a bit flat, chooses words carefully',
+    look:{ skin:'#EBC7A3', skinD:'#D9B08C', hair:'side', hairColor:'#141414', glasses:true, top:'#4A4F57', topD:'#3A3E45', collar:'zip', lip:'#A35A4C', nose:'#B88A6B', brow:'#141414' } },
+  who:'Hiroshi Tanaka, Lead Engineer',
+  blurb:'Your top engineer has gone quiet and turned down a stretch project. Find out why before you lose him.',
+  intro:'Hiroshi Tanaka is a Lead Engineer on your Platform team and has been at Halvern for six years. He has been rated a top performer three years running.',
+  facts:[
+    'He has been noticeably quieter in team meetings for about two months.',
+    'Last week he declined to lead the payments migration, a high-visibility stretch project.',
+    'His own work is still excellent and on time.',
+    'He has not mentioned anything to you directly.'
+  ],
+  goal:'Find out what is behind the change and agree on one thing that would re-energize him.',
+  playNote:'What is really going on with him changes each time you play.',
+  situation:'Hiroshi, a top-rated lead engineer, has gone quiet in meetings and declined a high-visibility stretch project.',
+  revealPhrase:'what is really going on with him',
+  vague:'"just busy" or "same as usual"', guardedMood:'detached and reluctant to get into it',
+  opening:'Oh, hey. What\'s up?',
+  start:{ standard:{trust:40, openness:35}, challenging:{trust:28, openness:22} },
+  known:'You know you have been quieter in meetings lately and that you turned down leading the payments migration. Your own work is still solid.',
+  scenes:[
+    { key:'arrive', label:'Arrive', caption:'Platform team area, 11:00 AM', bg:'desk', opts:{ label:'PLATFORM ENGINEERING' }, desc:'Your manager stopped by your desk in the engineering team area. Teammates are nearby.' },
+    { key:'talk', label:'Talk', caption:'5th floor lounge', bg:'lounge', desc:'You are sitting with your manager in a quiet corner of the 5th floor lounge.' },
+    { key:'commit', label:'Commit', caption:'Lounge, 4:45 PM', bg:'lounge', opts:{ late:true }, desc:'It is late afternoon and the conversation is wrapping up. Your manager may be working toward next steps.' }
+  ],
+  variants:[
+    { id:'A', label:'Bored with repetitive work and wants to mentor',
+      hint:'Your work has felt a bit repetitive lately. You can say that much.',
+      full:'You have been doing the same kind of maintenance work for a year and you are bored. What would energize you is mentoring the two new hires and having a say in architecture decisions. The migration felt like more of the same.',
+      unrevealed:'Hiroshi has done the same maintenance work for a year and is bored. Mentoring the two new hires and having a say in architecture would re-energize him; the migration felt like more of the same.',
+      needs:'a mentoring role for the new hires and a seat in architecture reviews',
+      mock:{ guarded:"It's fine. Just busy.", neutral:"Nothing major. Same as usual.", hint:"Honestly, the work's gotten a bit repetitive.", full:"I've been doing the same maintenance work for a year. I'd love to mentor the new hires and have more say in architecture.", plan:"If I could take on the two new hires, I think I'd actually look forward to Mondays again." } },
+    { id:'B', label:'Friction with a new architecture lead he hasn\'t raised',
+      hint:'Some recent changes on the team have been frustrating. You can say that much, but do not name anyone.',
+      full:'Since Daniel Okoye became the architecture lead, he has overruled your design proposals twice without discussion. You stopped speaking up in meetings and declined the migration because Daniel would be overseeing it.',
+      unrevealed:'Since Daniel Okoye became architecture lead, he has overruled Hiroshi\'s designs twice without discussion. Hiroshi stopped speaking up and declined the migration because Daniel would oversee it.',
+      needs:'a way to raise the design disagreements, possibly with the manager helping facilitate',
+      mock:{ guarded:"I'd rather not get into team stuff.", neutral:"I've just been keeping my head down.", hint:"Some of the recent changes on the team have been frustrating.", full:"Daniel's overruled my designs twice without any discussion. I stopped bothering to speak up.", plan:"If we could have a design review with you in the room, I'd be willing to try again." } },
+    { id:'C', label:'Weighing a startup offer',
+      hint:'You have been thinking about what is next in your career. You can say that much.',
+      full:'A former colleague offered you a founding engineer role at a startup. You have not decided. You declined the migration because you did not want to commit to a nine-month project if you might leave.',
+      unrevealed:'A former colleague offered Hiroshi a founding engineer role at a startup. He has not decided, and declined the migration because he did not want to commit to nine months if he might leave.',
+      needs:'an honest conversation about growth paths at Halvern, such as a principal engineer track',
+      mock:{ guarded:"Nothing to talk about, really.", neutral:"Just thinking about things.", hint:"I've been thinking a lot about what's next for me.", full:"Honestly, a former colleague offered me a founding engineer role at a startup. I haven't decided.", plan:"If there were a real principal track here, I'd take that seriously." } }
+  ],
+  exemplars:{
+    advice:'Before I suggest anything, what would make your work feel more worthwhile right now?',
+    advicePlan:'What\'s one change you\'d want to try over the next month? I have a couple of ideas, but I\'d like to start with yours.',
+    closed:'What\'s been on your mind the last couple of months?',
+    closedPlan:'What would you want to try first, and when should we check in on it?',
+    blame:'I\'ve noticed you\'ve been quieter lately, and I wanted to check in. How are things going for you?',
+    threat:'You matter a lot to this team. What would make this place work better for you?',
+    none:'Tell me more about that.'
+  }
+};
+
+const S4 = {
+  id:'s4', num:4, title:'Feedback on a behavior',
+  employee:{ name:'Valeria Gutiérrez', first:'Valeria', pron:'she', role:'Project Manager, Operations', tenure:'three years',
+    traits:'driven, organized, energetic, proud of getting things done, can get defensive about her intentions',
+    speech:'fast, warm and confident, often says things like "to keep things moving"',
+    look:{ skin:'#C98E66', skinD:'#B67A53', hair:'bun', hairColor:'#3B2416', top:'#2F4858', topD:'#263B49', collar:'blazer', lip:'#9E4A44', nose:'#8E5E40', earring:'#C9CED6', brow:'#3B2416' } },
+  who:'Valeria Gutiérrez, Project Manager',
+  blurb:'Peers say Valeria interrupts and dominates meetings. Give clear feedback and help her choose what to change.',
+  intro:'Valeria Gutiérrez is a Project Manager in Operations and has been at Halvern for three years. She is known for getting projects over the line.',
+  facts:[
+    'Two peers told you Valeria often interrupts and talks over others in team meetings.',
+    'In Tuesday\'s planning meeting you saw her finish Wei\'s point for him twice.',
+    'Her projects are on track and stakeholders like working with her.',
+    'Nobody has given her this feedback before.'
+  ],
+  goal:'Share the feedback with a specific example and its impact, understand her side, and agree on one behavior she will try.',
+  playNote:'The reason behind her behavior changes each time you play.',
+  situation:'Valeria, a strong project manager, often interrupts and talks over peers in meetings. She has not heard this feedback before.',
+  revealPhrase:'the reason behind her behavior in meetings',
+  vague:'"I\'m just trying to keep things moving"', guardedMood:'defensive about your intentions',
+  keyMove:{ rx:/\b(i (noticed|saw|observed|heard)|(people|peers|colleagues|a couple of|some|others) .{0,30}(felt|said|mentioned|shared)|interrupt\w*|talk(ed|ing|s)? over|cut (people |others |them |him |her )?off|finish(ed|ing)? .{0,25}(point|sentence|thought))/i, miss:'You never clearly described the behavior and its impact, such as interrupting Wei and peers feeling cut off (Reality).' },
+  opening:'That planning meeting ran long again, huh? Did you need me for something?',
+  start:{ standard:{trust:45, openness:40}, challenging:{trust:30, openness:25} },
+  known:'You know you are energetic and push hard in meetings to keep things moving. You do not know that peers feel cut off, and nobody has told you so. If your manager describes it fairly, you can accept it after a moment; if it feels like an attack, you defend your intentions.',
+  scenes:[
+    { key:'arrive', label:'Arrive', caption:'Hallway outside the Atlas room, 3:05 PM', bg:'hallway', desc:'Your manager caught you in the hallway right after a long team meeting. People are walking past.' },
+    { key:'talk', label:'Talk', caption:'Valeria\'s office', bg:'office', desc:'You are in your own office with the door closed, talking with your manager.' },
+    { key:'commit', label:'Commit', caption:'Valeria\'s office, wrapping up', bg:'office', opts:{ late:true }, desc:'The conversation is wrapping up in your office. Your manager may be working toward next steps.' }
+  ],
+  variants:[
+    { id:'A', label:'Pressure to show leadership after the reorg',
+      hint:'Since the reorg you have felt pressure to prove yourself. You can say that much.',
+      full:'After the reorg, your new director told you she wants to see you "own the room". You have been pushing hard in meetings to look like a leader, and you did not realize it was coming across as talking over people.',
+      unrevealed:'After the reorg, Valeria\'s new director told her to "own the room". She has been pushing hard in meetings to look like a leader and did not realize it came across as talking over people.',
+      needs:'a clearer picture of what good meeting leadership looks like, such as facilitating instead of driving',
+      mock:{ guarded:"I'm just trying to keep things moving. Someone has to.", neutral:"I didn't realize it was coming across that way.", hint:"Since the reorg, I've felt like I need to prove myself.", full:"My new director told me to own the room. I guess I took that too literally.", plan:"Maybe I try facilitating the next one, and make sure everyone gets their say before I jump in." } },
+    { id:'B', label:'Covering for a struggling teammate',
+      hint:'Some teammates are stretched thin right now. You can say that much.',
+      full:'Wei is behind on his workstream and struggling. You have been finishing his points and steering meetings to protect him and the timeline, without telling anyone.',
+      unrevealed:'Wei is behind on his workstream and struggling. Valeria has been finishing his points and steering meetings to protect him and the timeline, without telling anyone.',
+      needs:'support for Wei and a way to raise the timeline risk openly',
+      mock:{ guarded:"I'm just making sure the meeting gets somewhere.", neutral:"I didn't think it was a big deal.", hint:"Some people on the team are really stretched right now.", full:"Wei's behind and struggling. I've been covering for him so the timeline doesn't slip.", plan:"If we could get Wei some help, I wouldn't feel like I have to jump in for him." } },
+    { id:'C', label:'Anxious about a deadline and rushing discussions',
+      hint:'You are worried about the Q1 launch timeline. You can say that much.',
+      full:'You are scared the Q1 client launch will slip and that it would land on you. You rush discussions and cut people off because every meeting feels like lost time.',
+      unrevealed:'Valeria is scared the Q1 client launch will slip and land on her. She rushes discussions and cuts people off because every meeting feels like lost time.',
+      needs:'help resetting the launch timeline or getting a decision-maker to protect it',
+      mock:{ guarded:"We don't have time for long discussions right now.", neutral:"Things are just really busy.", hint:"Honestly, I'm worried about the Q1 launch.", full:"I'm scared the Q1 launch slips and it's on me. Every meeting feels like lost time.", plan:"If we could reset the launch plan together, I think I'd relax in those meetings." } }
+  ],
+  exemplars:{
+    advice:'I\'d like to share something I noticed and hear how you see it. In Tuesday\'s meeting you finished Wei\'s point twice. What was going on for you?',
+    advicePlan:'What\'s one thing you\'d want to try in the next team meeting? I can share ideas too, but I\'d like to start with yours.',
+    closed:'How did Tuesday\'s meeting feel from your side?',
+    closedPlan:'What will you try in the next team meeting, and how should we check in on it?',
+    blame:'In Tuesday\'s planning meeting, I noticed you finished Wei\'s point twice, and a couple of people felt cut off. What was happening for you there?',
+    threat:'I want to help you be even more effective in those meetings. How do you see them going?',
+    none:'Tell me more about how you see it.'
+  }
+};
+
+const SCENARIOS = [S1, S2, S3, S4];
+let SC = S1;   // the scenario being played
+// Fill {name} {He} {he} {his} {him} {himself} {her} for the current employee
+function P(str, sc){
+  const e = (sc || SC).employee, she = e.pron === 'she';
+  const map = { name:e.first, He: she ? 'She' : 'He', he: she ? 'she' : 'he', his: she ? 'her' : 'his', His: she ? 'Her' : 'His', him: she ? 'her' : 'him', himself: she ? 'herself' : 'himself' };
+  return String(str).replace(/\{(\w+)\}/g, (m,k)=> map[k] !== undefined ? map[k] : m);
+}
+
+/* =========================================================
+   2. RULE-BASED TAGGER  (pure)
+   ========================================================= */
+const TAGS = ['goal','open_question','closed_question','empathy','reflection','options','advice','next_step','blame','threat','private_move'];
+const DELTAS = {
+  open_question:{trust:5, openness:8}, empathy:{trust:8, openness:5}, reflection:{trust:6, openness:6},
+  options:{trust:4, openness:6}, goal:{trust:3, openness:2}, next_step:{trust:2, openness:2},
+  closed_question:{trust:-3, openness:-4}, advice:{trust:-2, openness:-6},
+  blame:{trust:-10, openness:-8}, threat:{trust:-15, openness:-12}, private_move:{trust:2, openness:1}
+};
+const RX = {
+  openStart:/^\s*(and\s+|so\s+|but\s+|okay,?\s+|ok,?\s+|well,?\s+)?(what|how|why|tell me|walk me|help me understand|describe|in what|which|where do you|who)\b/i,
+  closedStart:/^\s*(and\s+|so\s+|but\s+|okay,?\s+|ok,?\s+|well,?\s+)?(do|does|did|are|is|was|were|can|could|would|will|have|has|had|should|shall|may|you know|isn't|aren't|don't|didn't|won't|right)\b/i,
+  closedStartVoice:/^\s*(and\s+|so\s+|but\s+|okay,?\s+|ok,?\s+|well,?\s+)?(do|does|did|are|is|was|were|can|could|would|will|have|has|had)\s+(you|we|i|they|it|that|this|he|there|anything|everything)\b/i,
+  tellMore:/\b(tell me (more|about)|walk me through|help me understand|i('d| would) love to hear)\b/i,
+  empathy:/\b(sounds (like|hard|tough|difficult|stressful|exhausting|rough)|that must|i (can )?(understand|imagine) (how|why|that'?s|that must|it'?s|this is|what)|i (completely |totally |really )?understand\b(?!\s+(that )?you (missed|didn'?t|haven'?t|were late))|i can see (how|why|that)|i appreciate|thank(s| you) for (sharing|telling|being|trusting|opening)|i'?m (so |really )?sorry|that'?s a lot|not like you|i hear you|makes sense|that'?s (hard|tough|really hard|understandable|completely understandable|fair)|no wonder|i'?m glad you (told|shared|said)|we want you to feel|(mentally|physically|emotionally) (and (physically|mentally|emotionally) )?(taxing|draining|exhausting))/i,
+  reflection:/\b(what i'?m hearing|so i'?m hearing|i'?m hearing (that|you)|it sounds like|sounds like you|so you'?re (saying|feeling|putting|telling|working|covering|doing)|so you'?ve been|if i understand|you mentioned|you said|you'?ve said|i know you'?ve said|so it'?s been|let me make sure|so what you'?re saying)\b/i,
+  options:/\b(what (ideas|options)|what (could|would|might) help|what do you think (we|you) (could|should|can)|how (could|might|can) we|what would make|what support|what do you need|how can i (help|support)|what would you (suggest|propose|like to do)|any ideas|what would be helpful|anything i can do|come up with (a plan|ideas|something|options)( together)?|figure (this|it) out together|work (on|through) (this|it) together|plan together|what would work for you|how do you want to)\b/i,
+  advice:/\b((?<!\b(like|feel|feeling|that|if|when|because|why) )(you need to|you should|you have to|you must)|i need you to|i want you to|you'?ve got to|you got to|make sure you|here'?s what (i want|you|we need)|just (do|try|work|focus|get|stay)|try to be|you ought to|have you tried|i'?d suggest (you|that you)|my suggestion is|what you should do)\b/i,
+  nextStep:/\b(by (monday|tuesday|wednesday|thursday|friday|next week|end of)|let'?s check in|check in (again|next|on|in|with you (next|again|on|in))|check back|follow up|follow-up|next week|let'?s (plan|agree|meet|set|try|revisit|regroup|talk|connect|sync|reconnect|touch base|schedule)|(meet|talk|connect|sync|reconnect|circle back|regroup|check in) (again |back )?(next|in (a|one|two|three|a few|a couple of) (days|weeks)|on (monday|tuesday|wednesday|thursday|friday)|by|at the end|later this)|(next|this coming) (monday|tuesday|wednesday|thursday|friday)|circle back|set up (a |some )?time|schedule (a|some|time)|in (a|one|two|three|a couple of|a few) (days|weeks)|end of (the )?(week|month)|starting (tomorrow|monday|next week)|action items?|the plan is|so the plan|our plan|plan going forward|next step|touch base|revisit|so we'?ll|so we will|what will you|when (should|can|could) we|in two weeks|in a week|i'?ll (talk|speak|reach out|follow up|move|reassign|take|set up|schedule|loop in))\b/i,
+  goal:/\b(my goal|the goal|goal for|hope to|get out of (this|today)|wanted to (check in|talk|understand|see how)|the reason i (wanted|asked)|what would make (this|today) useful|the purpose|(some |a bit of )?feedback|share (something|what) i (noticed|observed|saw)|i'?d like to (talk|share|give) (about|you|with)|i want(ed)? to (share|give|talk about))\b/i,
+  blame:/\b(careless|lazy|sloppy|unacceptable|not good enough|you always|you never|you'?re always|you are always|disappoint\w*|why (didn'?t|can'?t|couldn'?t|haven'?t|won'?t) you|what'?s wrong with you|no excuse|excuses|get it together|unprofessional|your attitude|dropping the ball|dropped the ball|letting (me|us|the team) down)\b/i,
+  threat:/\b(hr|human resources|pip|performance improvement plan|written warning|write you up|(be|get|getting) fired|fire you|terminat(e|ed|ion)|let you go(?! (early|home))|consequences (for you|if)|there will be consequences|last chance|your job is (at risk|on the line|in danger)|on notice|disciplinary|formal process)\b/i,
+  threatNeg:/\b(not|won'?t|isn'?t|no|never|nothing to do with)\b[^.?!]{0,30}\b(hr|human resources|formal|disciplin\w*|pip|performance improvement|warning|fired|your job)\b/i,
+  privateMove:/\b(meeting room|a room|the room|somewhere (quiet|private)|in private|grab (a|some|a few)|few minutes|a minute|a (quick )?(chat|talk|word)|catch up|walk with me|coffee|sit down|step away)\b/i
+};
+function splitSentences(text){
+  return String(text||'').split(/(?<=[.!?])\s+|\n+/).map(s=>s.trim()).filter(Boolean);
+}
+function normalize(text){
+  return String(text||'').replace(/[‘’ʼ]/g,"'").replace(/[“”]/g,'"');
+}
+function ruleTags(text, turn){
+  const t = normalize(text);
+  const tags = new Set();
+  for (const s of splitSentences(t)){
+    if (s.endsWith('?')){
+      if (RX.openStart.test(s)) tags.add('open_question');
+      else if (RX.closedStart.test(s)) tags.add('closed_question');
+      else tags.add(/\b(what|how|why)\b/i.test(s) ? 'open_question' : 'closed_question');
+    } else if (!/[.!]$/.test(s)){
+      // unpunctuated speech (voice input): infer questions from how the sentence starts
+      if (RX.openStart.test(s)) tags.add('open_question');
+      else if (RX.closedStartVoice.test(s)) tags.add('closed_question');
+    }
+  }
+  // voice transcripts often arrive as one long unpunctuated run, so look for an open question anywhere in it
+  if (!t.includes('?') && /\b(what|how|why)\s+(is|are|was|were|has|have|had|do|does|did|would|could|can|will|should|made|makes|happened|helps?|else)\b|\bwhat'?s\b|\bhow'?s\b/i.test(t)) tags.add('open_question');
+  // closed questions inside an unpunctuated voice transcript ("...Do you think you're getting more reports")
+  if (!/[.!?]/.test(t) && /(?<!\b(what|how|why|where|when|which|who|plan|thing|point|idea|problem|issue|that|it|this|i|we|they)\s)\b(do|did|does|are|is|was|were|have|has|can|could|would|will)\s+(you|we|there)\b/i.test(t)) tags.add('closed_question');
+  // asking permission to give feedback is good practice, not a closed-question miss
+  if (/\b(can|may|could) i (share|give|offer|tell)|\b(is|would) (now|this) (be )?a good time\b/i.test(t)) tags.delete('closed_question');
+  if (RX.tellMore.test(t)){ tags.add('open_question'); tags.delete('closed_question'); }
+  // threat, unless it is a reassurance ("this won't go to HR")
+  for (const s of splitSentences(t)){ if (RX.threat.test(s) && !RX.threatNeg.test(s)) tags.add('threat'); }
+  if (RX.empathy.test(t)) tags.add('empathy');
+  if (RX.reflection.test(t)) tags.add('reflection');
+  if (RX.options.test(t)) tags.add('options');
+  if (RX.advice.test(t)) tags.add('advice');
+  if (RX.nextStep.test(t)) tags.add('next_step');
+  if (RX.goal.test(t)) tags.add('goal');
+  if (RX.blame.test(t)) tags.add('blame');
+  if (RX.privateMove.test(t)) tags.add('private_move');
+  // "why didn't you..." is judgmental, not open
+  if (/\bwhy (didn'?t|can'?t|couldn'?t|haven'?t|won'?t) you\b/i.test(t)) { tags.add('blame'); tags.delete('open_question'); }
+  // "why don't you..." is advice phrased as a question
+  // ("why don't we sit down / come up with a plan together" is an invitation, not advice)
+  if (/\bwhy (don'?t|not) you\b/i.test(t)) { tags.add('advice'); tags.delete('open_question'); }
+  // a friendly "got a few minutes?" opener is not a coaching miss
+  if (turn === 1 && tags.has('private_move')) tags.delete('closed_question');
+  return TAGS.filter(x=>tags.has(x));
+}
+// LLM tags may only add these (negative tags other than advice come from rules only)
+const LLM_ALLOWED = ['goal','open_question','empathy','reflection','options','advice','next_step'];
+function mergeTags(rules, llm){
+  const out = new Set(rules);
+  for (const t of (llm||[])) if (LLM_ALLOWED.includes(t)) out.add(t);
+  return TAGS.filter(t=>out.has(t));
+}
+function parseTagJSON(raw){
+  if (!raw) return [];
+  const s = String(raw);
+  for (const m of [s.match(/\{[^{}]*\}/), s.match(/\{[\s\S]*\}/)]){
+    if (!m) continue;
+    try { const o = JSON.parse(m[0]); if (Array.isArray(o.tags)) return o.tags.filter(t=>TAGS.includes(t)); } catch(e){}
+  }
+  return [];
+}
+
+/* =========================================================
+   3. STATE ENGINE  (pure)
+   ========================================================= */
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+function applyTags(state, tags){
+  let dT=0, dO=0;
+  for (const t of tags){ const d = DELTAS[t]; if (d){ dT+=d.trust; dO+=d.openness; } }
+  const next = { ...state };
+  next.trust = clamp(state.trust + dT, 0, 100);
+  next.openness = clamp(state.openness + dO, 0, 100);
+  next.peakTrust = Math.max(state.peakTrust ?? state.trust, next.trust);
+  if (next.trust >= 55) next.hint = true;
+  if (next.trust >= 70) next.full = true;
+  next.lastNegative = tags.includes('blame') || tags.includes('threat');
+  return { state: next, dT, dO };
+}
+function band(trust){ return trust < 35 ? 'guarded' : trust < 65 ? 'neutral' : 'open'; }
+function expressionFor(state){ return state.lastNegative ? 'upset' : band(state.trust); }
+function nextSceneIndex(cur, turn, tags){
+  if (cur === 0 && (turn >= 2 || tags.includes('private_move'))) return 1;
+  if (cur === 1 && (turn >= 8 || (tags.includes('next_step') && turn >= 4))) return 2;
+  return cur;
+}
+
+/* =========================================================
+   4. PROMPTS  (pure)
+   ========================================================= */
+function moodText(state){
+  if (state.trust < 15) return 'You feel shut down and want this conversation to end. Politely say you would like to wrap up. Give very short answers.';
+  if (state.lastNegative) return 'Your manager\'s last comment stung. Respond in a slightly defensive or hurt way, and share less.';
+  const b = band(state.trust);
+  if (b === 'guarded') return 'You feel ' + (SC.guardedMood || 'defensive') + '. Keep answers short and noncommittal. Do not open up.';
+  if (b === 'neutral') return 'You are cautious but willing to talk. Answer honestly, but do not volunteer much on your own.';
+  return 'You feel safe with your manager. You open up, share what you are allowed to share above, and engage with ideas for a plan.';
+}
+function employeePrompt(sc, variant, state, sceneIdx){
+  const e = sc.employee;
+  const allowed = [sc.known];
+  if (state.hint) allowed.push(variant.hint);
+  if (state.full) allowed.push(variant.full + ' Something that would genuinely help: ' + variant.needs + '.');
+  return [
+    `You are role-playing ${e.name}, a ${e.role} who has worked at Halvern for ${e.tenure}, in a workplace coaching practice simulation. The user is your manager. Stay fully in character as ${e.first} at all times.`,
+    `Personality: ${e.traits}. Speech style: ${e.speech}.`,
+    `What is true for you right now. You may share ONLY these facts:\n- ${allowed.join('\n- ')}`,
+    `If your manager asks what is behind the situation and the facts above do not give a reason, stay vague (for example ${sc.vague || '"it\'s fine"'}). Never invent any other reason.`,
+    `Your mood: ${moodText(state)}`,
+    `Setting: ${sc.scenes[sceneIdx].desc}`,
+    `At the start you said: "${sc.opening}"`,
+    `Rules: reply as ${e.first} in first person with 1 to 3 short spoken sentences. Plain conversational English. No stage directions, no actions in asterisks, no quotation marks, do not start with your name. Never mention AI, simulations, scores or trust. Never coach your manager or comment on their technique.`
+  ].join('\n\n');
+}
+function taggerPrompt(text){
+  return [
+    { role:'system', content:'You label one message a manager said during a coaching conversation. Allowed labels:\n' +
+      'goal: states or asks about the purpose of the conversation\n' +
+      'open_question: asks an open question (what, how, tell me more)\n' +
+      'empathy: acknowledges feelings or difficulty\n' +
+      'reflection: paraphrases what the employee said\n' +
+      'options: asks the employee for their ideas or what would help\n' +
+      'advice: tells the employee what to do or offers a solution\n' +
+      'next_step: proposes or confirms a concrete next step or follow-up\n' +
+      'Return JSON only, like {"tags":["open_question","empathy"]}. Use an empty list if none apply.' },
+    { role:'user', content:'Manager said: ' + text }
+  ];
+}
+function cleanReply(raw, firstName){
+  let s = normalize(raw).trim();
+  s = s.replace(/\*\*/g,'');
+  s = s.split(/\n\s*(?:manager|you|me|user)\s*:/i)[0];
+  s = s.replace(new RegExp('^\\s*' + firstName + '[^:\\n]{0,20}:\\s*','i'),'');
+  s = s.split(new RegExp('\\n\\s*' + firstName + '[^:\\n]{0,20}:','i'))[0];
+  s = s.trim().replace(/^["']+|["']+$/g,'');
+  s = s.replace(/\*[^*]{0,80}\*/g,'').replace(/\([^)]{0,60}\)/g,'');
+  s = s.replace(/\s+/g,' ').trim();
+  const sents = splitSentences(s).slice(0,3);
+  s = sents.join(' ');
+  const words = s.split(' ');
+  if (words.length > 70) s = words.slice(0,70).join(' ') + '...';
+  return s || 'Okay.';
+}
+
+/* =========================================================
+   5. LLM LAYER (WebLLM, API, mock)
+   ========================================================= */
+const params = new URLSearchParams(location.search);
+const LLM = {
+  mock: params.get('mock') === '1',
+  engine: null, mode: null,
+  api: { provider:'anthropic', key:'', model:'', route:'all' },
+  usesApi(purpose){
+    if (!this.api.key) return false;
+    if (this.mode === 'api') return true;
+    return this.api.route === 'all' || (this.api.route === 'report' && purpose === 'report');
+  },
+  async chat(messages, { temperature=0.7, max_tokens=160, purpose='employee' } = {}){
+    if (this.mock) return MockLLM.chat(messages, purpose);
+    if (this.usesApi(purpose)) return apiChat(this.api, messages, temperature, max_tokens);
+    if (!this.engine) throw new Error('No model loaded');
+    const r = await this.engine.chat.completions.create({ messages, temperature, max_tokens });
+    return (r.choices && r.choices[0] && r.choices[0].message.content) || '';
+  },
+  canStream(purpose){ return !this.mock && !!this.engine && !this.usesApi(purpose); },
+  // Streams tokens so the speech bubble fills in as the model writes
+  async stream(messages, { temperature=0.7, max_tokens=160 } = {}, onText){
+    const chunks = await this.engine.chat.completions.create({ messages, temperature, max_tokens, stream:true });
+    let full = '';
+    for await (const c of chunks){
+      const d = (c.choices && c.choices[0] && c.choices[0].delta && c.choices[0].delta.content) || '';
+      if (d){ full += d; onText(full); }
+    }
+    return full;
+  },
+  warm: null
+};
+function streamPreview(raw, firstName){
+  let s = normalize(raw).replace(/\*\*/g,'');
+  s = s.replace(new RegExp('^\\s*' + firstName + '[^:\\n]{0,20}:\\s*','i'),'').replace(/^\s*["']+/,'');
+  s = s.split(/\n\s*\w{2,12}\s*:/)[0];
+  return s.replace(/\*[^*]{0,80}\*?/g,'').replace(/\s+/g,' ').trim();
+}
+async function apiChat(api, messages, temperature, max_tokens){
+  const sys = messages.filter(m=>m.role==='system').map(m=>m.content).join('\n\n');
+  const rest = messages.filter(m=>m.role!=='system');
+  if (api.provider === 'anthropic'){
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'content-type':'application/json', 'x-api-key':api.key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({ model: api.model || 'claude-sonnet-5-5', system: sys, messages: rest, max_tokens, temperature })
+    });
+    if (!res.ok) throw new Error('API error ' + res.status + ': ' + (await res.text()).slice(0,200));
+    const j = await res.json();
+    return (j.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
+  } else {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method:'POST',
+      headers:{ 'content-type':'application/json', 'authorization':'Bearer ' + api.key },
+      body: JSON.stringify({ model: api.model || 'gpt-4o-mini', messages, max_completion_tokens: max_tokens })
+    });
+    if (!res.ok) throw new Error('API error ' + res.status + ': ' + (await res.text()).slice(0,200));
+    const j = await res.json();
+    return (j.choices && j.choices[0] && j.choices[0].message.content) || '';
+  }
+}
+const MockLLM = {
+  async chat(messages, purpose){
+    await new Promise(r=>setTimeout(r, 250));
+    if (purpose === 'tagger') return '{"tags":[]}';
+    if (purpose === 'report') return '';   // forces the scenario's own exemplar, so previews test them
+    const sys = messages[0].content;
+    const v = Session.variant.mock;
+    if (/shut down/.test(sys)) return 'Can we just wrap this up?';
+    if (/stung/.test(sys)) return v.guarded;
+    if (Session.state.full) return Session.turn >= 6 ? v.plan : v.full;
+    if (Session.state.hint) return v.hint;
+    if (band(Session.state.trust) === 'guarded') return v.guarded;
+    return v.neutral;
+  }
+};
+async function loadWebLLM(modelId, onProgress){
+  const webllm = await import('https://esm.run/@mlc-ai/web-llm@0.2.89');
+  const appConfig = { ...webllm.prebuiltAppConfig, cacheBackend:'indexeddb' };
+  const engine = await webllm.CreateMLCEngine(modelId, { appConfig, initProgressCallback: (p)=>onProgress(p) });
+  return engine;
+}
+
+/* =========================================================
+   6. SCORING AND REPORT  (pure)
+   ========================================================= */
+const AREAS = [
+  { key:'goal', name:'Goal', kind:'GROW' },
+  { key:'reality', name:'Reality', kind:'GROW' },
+  { key:'options', name:'Options', kind:'GROW' },
+  { key:'way', name:'Way forward', kind:'GROW' },
+  { key:'questioning', name:'Questioning', kind:'Behavior' },
+  { key:'listening', name:'Listening and empathy', kind:'Behavior' },
+  { key:'askfirst', name:'Ask before tell', kind:'Behavior' },
+  { key:'tone', name:'Tone and respect', kind:'Behavior' }
+];
+function firstTurn(log, tag){ const t = log.find(l=>l.tags.includes(tag)); return t ? t.turn : null; }
+function countTag(log, tag){ return log.filter(l=>l.tags.includes(tag)).length; }
+function scoreSession(log, state){
+  const n = log.length;
+  const open = countTag(log,'open_question'), closed = countTag(log,'closed_question');
+  const emp = countTag(log,'empathy'), refl = countTag(log,'reflection');
+  const fGoal = firstTurn(log,'goal'), fAdv = firstTurn(log,'advice'), fOpt = firstTurn(log,'options'), fOpen = firstTurn(log,'open_question');
+  const threats = countTag(log,'threat'), blames = countTag(log,'blame');
+  const nextTurns = log.filter(l=>l.tags.includes('next_step') && l.scene >= 1);
+  const s = {}, why = {};
+  if (n === 0){ AREAS.forEach(a=>{ s[a.key]=1; why[a.key]='No turns taken'; }); return { scores:s, why, overall:1 }; }
+  // Goal
+  if (fGoal && fGoal <= 3){ s.goal = 5; why.goal = 'Set the purpose early (turn ' + fGoal + ')'; }
+  else if (fGoal){ s.goal = 3; why.goal = 'Purpose came late (turn ' + fGoal + ')'; }
+  else { s.goal = 2; why.goal = 'No clear purpose for the conversation'; }
+  // Reality
+  if (state.full){ s.reality = 5; why.reality = 'Uncovered the real cause'; }
+  else if (state.hint){ s.reality = 4; why.reality = 'Got a hint of the cause, not the full story'; }
+  else if (open >= 3){ s.reality = 3; why.reality = 'Explored, but the cause stayed hidden'; }
+  else { s.reality = 2; why.reality = P('Little exploration of what is going on for {name}'); }
+  // a scenario's must-say move (e.g. naming the behavior in S4) caps Reality when missing
+  if (SC.keyMove && !log.some(l=>SC.keyMove.rx.test(normalize(l.text))) && s.reality > 3){ s.reality = 3; why.reality += ' (key point never stated)'; }
+  // Options
+  if (fOpt && (!fAdv || fOpt <= fAdv)){ s.options = 5; why.options = P('Asked for {name}\'s ideas before your own'); }
+  else if (fOpt){ s.options = 3; why.options = 'Asked for ideas, but after giving advice'; }
+  else if (fAdv){ s.options = 2; why.options = P('Offered solutions without asking for {his}'); }
+  else { s.options = 1; why.options = 'Options were not explored'; }
+  // Way forward
+  const dated = nextTurns.some(l=>/\b((by|next|this|on|until|before) (monday|tuesday|wednesday|thursday|friday)(?!'s)|next week|tomorrow|end of (the )?(week|month)|in (a|one|two|three|a couple of|a few|\d+) (days?|weeks?|months?)|\d+ (days|weeks))\b/i.test(l.text));
+  if (nextTurns.length && dated){ s.way = 5; why.way = 'Specific next step with a follow-up time'; }
+  else if (nextTurns.length){ s.way = 4; why.way = 'Next step agreed; add a follow-up date'; }
+  else { s.way = n >= 8 ? 2 : 1; why.way = 'No agreed next step'; }
+  // Questioning
+  const qs = open + closed;
+  if (qs === 0){ s.questioning = 1; why.questioning = 'No questions asked'; }
+  else { const r = open/qs; s.questioning = r >= .8 ? 5 : r >= .6 ? 4 : r >= .4 ? 3 : 2;
+    if (open < 2) s.questioning = Math.min(s.questioning, 3);
+    why.questioning = open + ' of ' + qs + ' questions were open'; }
+  // Listening
+  const L = emp + refl;
+  s.listening = L === 0 ? 1 : L === 1 ? 2 : L === 2 ? 3 : L <= 4 ? 4 : 5;
+  why.listening = emp + ' acknowledgment' + (emp===1?'':'s') + ', ' + refl + ' reflection' + (refl===1?'':'s');
+  // Ask before tell
+  if (!fAdv){ s.askfirst = open >= 2 ? 5 : 3; why.askfirst = 'No advice given before asking'; }
+  else if (!fOpen || fAdv < fOpen){ s.askfirst = 1; why.askfirst = 'Advice came before any open question'; }
+  else if (fAdv <= 3){ s.askfirst = 2; why.askfirst = 'Advice came early (turn ' + fAdv + ')'; }
+  else { s.askfirst = 4; why.askfirst = 'Advice came after exploring (turn ' + fAdv + ')'; }
+  // Tone
+  if (threats){ s.tone = 1; why.tone = 'Raised consequences or threats'; }
+  else if (blames >= 2){ s.tone = 2; why.tone = blames + ' turns with blaming language'; }
+  else if (blames === 1){ s.tone = 3; why.tone = 'One turn with blaming language'; }
+  else { s.tone = 5; why.tone = 'No blame or threat language'; }
+  if (threats){ ['questioning','listening','askfirst'].forEach(k=>{ if (s[k] > 2){ s[k] = 2; why[k] += ' (capped: threat language)'; } }); }
+  const overall = Math.round(AREAS.reduce((a,x)=>a+s[x.key],0) / AREAS.length * 10) / 10;
+  return { scores:s, why, overall };
+}
+function stripFillers(t){
+  return normalize(t).replace(/\b(uh+|um+|uhm|erm|hmm+)\b[,.]?\s*/gi,'').replace(/\s+/g,' ').trim();
+}
+function clipWords(t, n){ const w = stripFillers(t).split(' '); return w.length > n ? w.slice(0,n).join(' ') + '...' : w.join(' '); }
+// Short quote: if a sentence carries the evidence, quote just that sentence
+const q = (t, rx)=>{
+  const clean = stripFillers(t);
+  if (rx){
+    const s = splitSentences(clean).find(x=>rx.test(x));
+    if (s){
+      const w = s.split(' ');
+      if (w.length <= 28) return s;
+      // long unpunctuated voice turn: quote a window around the matching phrase
+      const m = s.match(rx);
+      const at = m ? s.slice(0, m.index).split(' ').length - 1 : 0;
+      const start = Math.max(0, at - 4);
+      const part = w.slice(start, start + 24).join(' ');
+      return (start > 0 ? '...' : '') + part + (start + 24 < w.length ? '...' : '');
+    }
+  }
+  return clipWords(clean, 24);
+};
+const TAG_RX = { open_question:/\b(what|how|tell me|walk me|help me understand)\b/i, empathy:null, reflection:null, options:null, next_step:null };
+function buildStrengths(log, state){
+  const out = [], used = new Set();
+  // prefer turns where the rule-based tagger found the tag, and never reuse a quote
+  const find = tag => log.find(l=>!used.has(l.turn) && (l.rtags||l.tags).includes(tag)) || log.find(l=>!used.has(l.turn) && l.tags.includes(tag));
+  const take = (tag, fn) => { const l = find(tag); if (l){ used.add(l.turn); out.push(fn(l)); } };
+  const fAdv = firstTurn(log,'advice');
+  if (countTag(log,'open_question') >= 2) take('open_question', l=>`${P('You asked open questions that let {name} explain in {his} own words, like')} "${q(l.text, TAG_RX.open_question)}"`);
+  take('empathy', l=>`${P('You acknowledged how {name} was feeling:')} "${q(l.text, RX.empathy)}"`);
+  take('reflection', l=>`You reflected back what you heard: "${q(l.text, RX.reflection)}"`);
+  const oq = log.find(l=>l.tags.includes('options') && !used.has(l.turn));
+  if (oq && (!fAdv || oq.turn <= fAdv)){ used.add(oq.turn); out.push(`${P("You asked for {name}'s ideas before offering yours:")} "${q(oq.text, RX.options)}"`); }
+  const ns = log.find(l=>l.tags.includes('next_step') && l.scene >= 1 && !used.has(l.turn));
+  if (ns) out.push(`You worked toward a concrete next step: "${q(ns.text, RX.nextStep)}"`);
+  if (state.full) out.push(P('You built enough trust for {name} to share ') + SC.revealPhrase + '.');
+  if (log.length && !countTag(log,'blame') && !countTag(log,'threat')) out.push('Your tone stayed respectful throughout, with no blame or threat language.');
+  if (!out.length && log.length) out.push(`You kept the conversation going for ${log.length} turn${log.length===1?'':'s'}.`);
+  return out.slice(0,3);
+}
+function buildImprovements(log, state){
+  const out = [];
+  const t = log.find(l=>l.tags.includes('threat')); if (t) out.push(`In turn ${t.turn} you raised consequences, which in a conversation like this usually shuts things down: "${q(t.text, RX.threat)}" (Tone and respect)`);
+  const b = log.find(l=>l.tags.includes('blame')); if (b) out.push(`In turn ${b.turn} blaming language lowered ${SC.employee.first}'s trust: "${q(b.text, RX.blame)}" (Tone and respect)`);
+  const fAdv = firstTurn(log,'advice'), fOpt = firstTurn(log,'options');
+  const a = log.find(l=>l.tags.includes('advice'));
+  if (a && (!fOpt || fAdv < fOpt)){
+    const late = a.scene >= 1 && a.fullBefore;
+    out.push(late
+      ? `In turn ${a.turn} you had the right goal of agreeing on a plan, but ${P('you handed {name} the actions instead of asking what {he} thought would work:')} "${q(a.text, RX.advice)}" (Ask before tell, Options)`
+      : `In turn ${a.turn} you offered a fix before asking for ${SC.employee.first}'s ideas: "${q(a.text, RX.advice)}" (Ask before tell, Options)`);
+  }
+  const open = countTag(log,'open_question'), closed = countTag(log,'closed_question');
+  if (closed > open){ const c = log.find(l=>l.tags.includes('closed_question')); out.push(`Most of your questions were closed. Try starting with what or how instead, for example in place of "${q(c.text)}" (Questioning)`); }
+  if (log.length >= 3 && !countTag(log,'empathy') && !countTag(log,'reflection')) out.push(P('You did not acknowledge how {name} was feeling or reflect back what {he} said (Listening and empathy).'));
+  if (log.length && SC.keyMove && !log.some(l=>SC.keyMove.rx.test(normalize(l.text)))) out.push(SC.keyMove.miss);
+  if (log.length && !state.full) out.push(P('{name} never shared the real cause. More open questions and acknowledgment would have built the trust {he} needed (Reality).'));
+  if (log.length && !log.some(l=>l.tags.includes('next_step') && l.scene >= 1)) out.push('The conversation ended without a specific next step and follow-up date (Way forward).');
+  if (log.length && !countTag(log,'goal')) out.push('You did not set a purpose for the conversation at the start (Goal).');
+  return out.slice(0,3);
+}
+const WHY_MISSED = {
+  threat:'Raising consequences this early makes {name} protect {himself} instead of opening up.',
+  blame:'Labeling the problem as {his} fault puts {name} on the defensive.',
+  advice:'It jumps to a fix before you understand the cause, so {name} stops explaining.',
+  closed_question:'A yes or no question gives {name} an easy way to say very little.',
+  none:'It moved the conversation along without inviting {name} to say more.'
+};
+function primaryIssue(tags){
+  for (const k of ['threat','blame','advice','closed_question']) if (tags.includes(k)) return k;
+  return 'none';
+}
+function pickRewriteTurns(log){
+  const cand = log.map(l=>({ ...l, issue: primaryIssue(l.tags) }))
+    // a closed question is only worth rewriting if the turn did net harm (not when paired with a good reflection)
+    .filter(l=>['threat','blame','advice'].includes(l.issue) || (l.issue === 'closed_question' && l.dT < 0) || (!l.tags.length && l.text.split(' ').length > 3));
+  const order = { threat:0, blame:1, advice:2, closed_question:3, none:4 };
+  cand.sort((a,b)=> (order[a.issue]-order[b.issue]) || (a.dT - b.dT) || (a.turn - b.turn));
+  return cand.slice(0,3).sort((a,b)=>a.turn-b.turn);
+}
+function auditRewrite(text, original){
+  const t = normalize(text).trim().replace(/^["']+|["']+$/g,'').trim();
+  if (!t) return null;
+  if (t.split(/\s+/).length > 60) return null;
+  if (RX.blame.test(t) || RX.threat.test(t)) return null;
+  if (t.toLowerCase() === String(original).trim().toLowerCase()) return null;
+  if (/\b(as an ai|rewrite|rewritten|manager said)\b/i.test(t)) return null;
+  return t;
+}
+function whyMissed(turn){
+  if (turn.issue === 'advice' && turn.scene >= 1 && turn.fullBefore)
+    return P('Building a plan was the right move here, but you supplied the actions yourself. Asking {name} what {he} would do first makes {him} more likely to own the plan.');
+  return P(WHY_MISSED[turn.issue]);
+}
+function rewritePrompt(turn, variant){
+  const issue = { threat:'it threatens consequences', blame:'it blames the employee', advice:'it tells the employee what to do instead of first asking for their ideas', closed_question:'it is a closed yes or no question', none:'it does not invite the employee to say more' }[turn.issue];
+  const stage = turn.scene === 0 ? 'the very start of the conversation'
+    : turn.scene === 1 ? 'the middle of the conversation, while exploring what is going on'
+    : 'the end of the conversation, while agreeing on next steps';
+  const known = turn.fullBefore ? P('{name} has already explained the real cause: ') + variant.unrevealed : 'The manager does not yet know the real reason behind the situation.';
+  const goal = (turn.issue === 'advice' && turn.fullBefore)
+    ? 'Keep the manager\'s goal of agreeing on a plan, but turn it into a question that asks ' + SC.employee.first + ' to propose the actions first, and offer to add ideas after.'
+    : 'Keep the manager\'s intent at this stage of the conversation.';
+  return [
+    { role:'system', content:'You are an expert leadership coach. Rewrite one line a manager said in a coaching conversation so it follows good coaching practice: open questions, empathy, asking before telling, no blame. Reuse some of the manager\'s words. Fit the line to where the conversation is; do not go back to asking what is wrong if the cause is already known. One or two sentences, under 40 words. Output only the rewritten line, with no quotes or explanation.' },
+    { role:'user', content:'Situation: ' + SC.situation + ' ' + known + '\nStage: ' + stage + '.' +
+      (turn.prevReply ? '\n' + SC.employee.first + ' had just said: "' + turn.prevReply + '"' : '') +
+      '\nThe manager said: "' + clipWords(turn.text, 80) + '"\nThe problem: ' + issue + '.\n' + goal + '\nRewritten line:' }
+  ];
+}
+const TIPS = {
+  goal:'Open by saying why you wanted to talk and ask what {name} hopes to get out of it.',
+  reality:'Spend more time on what changed before you move to fixes. Ask "what else?" at least once.',
+  options:'Ask "What ideas do you have?" before you offer any of your own.',
+  way:'Close with one specific next step and a date to check in, in {name}\'s words.',
+  questioning:'Start questions with what or how instead of do, did or are.',
+  listening:'When {name} shares something hard, acknowledge it before asking your next question.',
+  askfirst:'Hold your advice until {name} has explained the situation and offered {his} own ideas.',
+  tone:'Describe the specific behavior and its impact instead of labels or consequences.'
+};
+function buildTips(scores){
+  const tips = AREAS.map(a=>({ key:a.key, s:scores[a.key] })).filter(x=>x.s < 5).sort((x,y)=>x.s-y.s).slice(0,2).map(x=>P(TIPS[x.key]));
+  return tips.length ? tips : [P('Strong session. Try the Challenging difficulty next, where {name} starts out more guarded.')];
+}
+
+/* =========================================================
+   7. SESSION + UI
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const Session = { difficulty:'standard', variant:null, lastVariantId:null, state:null, sceneIdx:0, turn:0, log:[], busy:false, ended:false };
+
+function pickVariant(){
+  Session.lastBySc = Session.lastBySc || {};
+  const pool = SC.variants.filter(v=>v.id !== Session.lastBySc[SC.id]);
+  const v = pool[Math.floor(Math.random()*pool.length)];
+  Session.lastVariantId = v.id; Session.lastBySc[SC.id] = v.id;
+  return v;
+}
+function show(id){
+  ['screen-setup','screen-select','screen-brief','screen-scene','screen-loading','screen-report'].forEach(s=>$(s).classList.toggle('hidden', s!==id));
+  $('topbar').classList.toggle('hidden', id === 'screen-scene');
+  window.scrollTo(0,0);
+  if (id === 'screen-scene') fitStage();
+}
+function fitStage(){
+  const w = window.innerWidth, h = window.innerHeight;
+  const s = Math.min(w/1440, h/900);
+  const el = $('stageWrap');
+  el.style.transform = `translate(${(w-1440*s)/2}px, ${(h-900*s)/2}px) scale(${s})`;
+}
+window.addEventListener('resize', ()=>{ if (!$('screen-scene').classList.contains('hidden')) fitStage(); });
+
+/* ---------- Art ---------- */
+const EXPR = {
+  neutral:{ bl:'M688 392 Q700 388 711 390', br:'M729 390 Q740 388 752 392', m:'M707 445 Q720 448 733 445', ey:406, arms:'clasp' },
+  guarded:{ bl:'M688 397 Q700 396 712 398', br:'M728 398 Q740 396 752 397', m:'M709 446 L731 446', ey:410, arms:'cross' },
+  open:{ bl:'M688 387 Q700 381 711 385', br:'M729 385 Q740 381 752 387', m:'M705 442 Q720 455 735 442', ey:405, arms:'open' },
+  upset:{ bl:'M688 387 Q700 391 712 397', br:'M728 397 Q740 391 752 387', m:'M706 449 Q720 438 734 449', ey:407, arms:'cross' }
+};
+// One parametric seated character: skin, hair, clothing and accessories come from the scenario's look
+function personSVG(L, expr, noChair){
+  const e = EXPR[expr] || EXPR.neutral;
+  const top = L.top, topD = L.topD, skin = L.skin, skinD = L.skinD;
+  let arms = '';
+  if (e.arms === 'clasp') arms = `<path d="M642 545 C618 580 640 606 694 604" stroke="${top}" stroke-width="40" fill="none" stroke-linecap="round"/><path d="M798 545 C822 580 800 606 746 604" stroke="${top}" stroke-width="40" fill="none" stroke-linecap="round"/><ellipse cx="720" cy="602" rx="36" ry="17" fill="${skin}"/>`;
+  if (e.arms === 'cross') arms = `<path d="M650 572 C690 602 750 602 790 572" stroke="${topD}" stroke-width="46" fill="none" stroke-linecap="round"/><ellipse cx="654" cy="566" rx="16" ry="14" fill="${skin}"/><ellipse cx="786" cy="566" rx="16" ry="14" fill="${skin}"/>`;
+  if (e.arms === 'open') arms = `<path d="M642 545 C620 585 630 606 668 606" stroke="${top}" stroke-width="40" fill="none" stroke-linecap="round"/><path d="M798 545 C820 585 810 606 772 606" stroke="${top}" stroke-width="40" fill="none" stroke-linecap="round"/><ellipse cx="676" cy="604" rx="22" ry="14" fill="${skin}"/><ellipse cx="764" cy="604" rx="22" ry="14" fill="${skin}"/>`;
+  const hc = L.hairColor;
+  const hairBack = L.hair === 'long' ? `<path d="M666 345 C652 420 654 520 664 564 L776 564 C786 520 788 420 774 345 Z" fill="${hc}"/>` : '';
+  const hairTop = {
+    short:`<path d="M671 388 C668 342 700 332 720 332 C746 332 774 342 770 388 C760 362 742 354 720 354 C698 354 682 362 671 388 Z" fill="${hc}"/>`,
+    long:`<path d="M670 410 C664 350 696 336 722 336 C752 336 778 356 772 410 C768 380 752 362 724 360 C702 362 684 378 670 410 Z" fill="${hc}"/>`,
+    side:`<path d="M670 399 C660 337 696 321 724 323 C758 325 778 347 770 399 C766 373 756 361 742 355 C728 371 692 373 672 365 Z" fill="${hc}"/>`,
+    bun:`<circle cx="720" cy="328" r="24" fill="${hc}"/><path d="M668 402 C662 346 696 336 720 336 C746 336 778 346 772 402 C766 370 746 358 720 358 C694 358 674 370 668 402 Z" fill="${hc}"/>`
+  }[L.hair] || '';
+  const collar = {
+    v:`<path d="M700 500 L720 538 L740 500 Z" fill="#F4F4F4"/>`,
+    neck:`<path d="M702 500 Q720 524 738 500" stroke="${skinD}" stroke-width="10" fill="none"/>`,
+    zip:`<path d="M702 500 L720 540 L738 500 Z" fill="${topD}"/><line x1="720" y1="540" x2="720" y2="612" stroke="${topD}" stroke-width="3"/>`,
+    blazer:`<path d="M700 500 L720 546 L740 500 Z" fill="#F4F4F4"/><path d="M700 500 L688 566 L716 546 Z" fill="${topD}"/><path d="M740 500 L752 566 L724 546 Z" fill="${topD}"/>`
+  }[L.collar] || '';
+  const beard = L.beard ? `<path d="M676 420 C680 462 700 472 720 472 C740 472 760 462 764 420 C756 446 740 456 720 456 C700 456 684 446 676 420 Z" fill="#241710"/>` : '';
+  const glasses = L.glasses ? `<rect x="683" y="${e.ey-12}" width="34" height="24" rx="6" fill="none" stroke="#1E1E1E" stroke-width="3"/><rect x="723" y="${e.ey-12}" width="34" height="24" rx="6" fill="none" stroke="#1E1E1E" stroke-width="3"/><line x1="717" y1="${e.ey-2}" x2="723" y2="${e.ey-2}" stroke="#1E1E1E" stroke-width="3"/>` : '';
+  const ear = L.earring ? `<circle cx="671" cy="430" r="5" fill="${L.earring}"/><circle cx="769" cy="430" r="5" fill="${L.earring}"/>` : '';
+  return `<g class="bodyg">
+    ${noChair ? '' : `<rect x="628" y="410" width="184" height="240" rx="30" fill="${L.chair || '#2B2B2B'}"/>`}
+    ${hairBack}
+    <path d="M630 ${noChair ? 612 : 650} C630 545 662 500 720 500 C778 500 810 545 810 ${noChair ? 612 : 650} Z" fill="${top}"/>
+    ${collar}
+    <rect x="704" y="452" width="32" height="54" fill="${skinD}"/>
+    <ellipse cx="670" cy="410" rx="9" ry="14" fill="${skinD}"/><ellipse cx="770" cy="410" rx="9" ry="14" fill="${skinD}"/>
+    <ellipse cx="720" cy="405" rx="50" ry="58" fill="${skin}"/>
+    ${hairTop}${beard}${ear}
+    <g class="eyes"><ellipse cx="700" cy="${e.ey}" rx="5" ry="6" fill="#141414"/><ellipse cx="740" cy="${e.ey}" rx="5" ry="6" fill="#141414"/></g>
+    ${glasses}
+    <path d="${e.bl}" stroke="${L.brow || '#141414'}" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="${e.br}" stroke="${L.brow || '#141414'}" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M720 410 Q715 425 723 428" stroke="${L.nose}" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="${e.m}" stroke="${L.lip}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    ${arms}
+  </g>`;
+}
+const TXT = (x,y,s,w,fill,t,ls)=>`<text x="${x}" y="${y}" fill="${fill}" font-family="Inter, sans-serif" font-size="${s}" font-weight="${w}"${ls ? ` letter-spacing="${ls}"` : ''}>${t}</text>`;
+const BG = {
+  // open-plan desk (Kwame, Hiroshi's team area)
+  desk(o = {}){
+    const back = `<rect width="1440" height="900" fill="#EDE7E0"/>
+    <rect x="60" y="100" width="400" height="470" fill="#BFD3E2"/>
+    <rect x="90" y="400" width="60" height="170" fill="#8DA6BC"/><rect x="160" y="340" width="80" height="230" fill="#7C97AE"/>
+    <rect x="250" y="420" width="50" height="150" fill="#9AB2C6"/><rect x="310" y="370" width="90" height="200" fill="#8DA6BC"/><rect x="410" y="450" width="40" height="120" fill="#7C97AE"/>
+    <rect x="60" y="100" width="400" height="470" fill="none" stroke="#2E2E2E" stroke-width="10"/><line x1="260" y1="100" x2="260" y2="570" stroke="#2E2E2E" stroke-width="6"/>
+    <rect x="1110" y="110" width="270" height="290" fill="#C8102E"/><rect x="1150" y="150" width="34" height="34" fill="#fff"/>
+    ${TXT(1150,240,32,700,'#fff','HALVERN',6)}${TXT(1150,272,14,400,'#fff',o.label || 'CLIENT REPORTING',2)}
+    <rect x="560" y="140" width="70" height="70" fill="#FFE27A" transform="rotate(-4 595 175)"/><rect x="645" y="150" width="70" height="70" fill="#fff" transform="rotate(3 680 185)"/>
+    <rect x="0" y="640" width="1440" height="260" fill="#D6CCBF"/><rect x="0" y="632" width="1440" height="10" fill="#BDB2A4"/>
+    <rect x="1180" y="540" width="84" height="104" rx="6" fill="#2E2E2E"/>
+    <ellipse cx="1200" cy="510" rx="26" ry="60" fill="#3E7D4F" transform="rotate(-20 1200 510)"/><ellipse cx="1245" cy="500" rx="26" ry="66" fill="#2F6A40" transform="rotate(18 1245 500)"/><ellipse cx="1222" cy="480" rx="22" ry="70" fill="#4C9160"/>`;
+    const code = o.label === 'PLATFORM ENGINEERING';
+    const front = `<rect x="420" y="606" width="640" height="24" rx="4" fill="#8B6B4E"/><rect x="440" y="630" width="600" height="150" fill="#6E533B"/>
+    <rect x="500" y="566" width="36" height="40" rx="5" fill="#C8102E"/><path d="M536 576 C552 576 552 596 536 596" stroke="#C8102E" stroke-width="6" fill="none"/>
+    <rect x="836" y="420" width="180" height="146" rx="8" fill="#1E1E1E"/><rect x="846" y="430" width="160" height="126" fill="${code ? '#1F2430' : '#F6F6F6'}"/>
+    ${code ? `<rect x="858" y="444" width="70" height="8" fill="#7FB3D5"/><rect x="870" y="462" width="100" height="8" fill="#C8102E"/><rect x="870" y="480" width="80" height="8" fill="#A3BE8C"/><rect x="858" y="498" width="60" height="8" fill="#7FB3D5"/><rect x="870" y="516" width="110" height="8" fill="#EBCB8B"/>`
+      : `<rect x="856" y="442" width="140" height="10" fill="#D8D8D8"/><rect x="856" y="462" width="140" height="10" fill="#E8E8E8"/><rect x="856" y="482" width="90" height="10" fill="#C8102E"/><rect x="856" y="502" width="140" height="10" fill="#E8E8E8"/><rect x="856" y="522" width="110" height="10" fill="#E8E8E8"/>`}
+    <rect x="918" y="566" width="16" height="40" fill="#2E2E2E"/><rect x="890" y="600" width="72" height="8" rx="3" fill="#2E2E2E"/>`;
+    return { back, front };
+  },
+  // glass meeting room (Kwame and Priya)
+  room(o = {}){
+    const c = !!o.commit;
+    const back = `<rect width="1440" height="900" fill="${c ? '#EAE3D8' : '#E6E2DC'}"/>
+    <rect x="0" y="80" width="330" height="560" fill="#D3E1EA"/><line x1="110" y1="80" x2="110" y2="640" stroke="#9FB0BC" stroke-width="5"/><line x1="220" y1="80" x2="220" y2="640" stroke="#9FB0BC" stroke-width="5"/>
+    <line x1="330" y1="80" x2="330" y2="640" stroke="#2E2E2E" stroke-width="8"/><rect x="0" y="330" width="330" height="28" fill="#C8102E" opacity=".85"/>
+    <rect x="880" y="130" width="400" height="260" rx="6" fill="#fff" stroke="#BDBDBD" stroke-width="4"/>
+    ${c ? `${TXT(912,185,24,700,'#C8102E',o.board || 'Next steps')}
+      <path d="M915 225 L1120 225" stroke="#111" stroke-width="4" stroke-linecap="round"/><path d="M915 262 L1180 262" stroke="#111" stroke-width="4" stroke-linecap="round"/><path d="M915 299 L1060 299" stroke="#111" stroke-width="4" stroke-linecap="round"/>
+      <path d="M1200 210 l12 12 l22 -26" stroke="#3E7D4F" stroke-width="5" fill="none" stroke-linecap="round"/>`
+    : `<path d="M920 190 L1040 190" stroke="#9A9A9A" stroke-width="4" stroke-linecap="round"/><path d="M920 225 L1110 225" stroke="#BDBDBD" stroke-width="4" stroke-linecap="round"/>`}
+    ${c ? `<rect x="1310" y="120" width="130" height="520" fill="#C9BFB2"/><rect x="1300" y="120" width="12" height="520" fill="#8B6B4E"/>` : `<rect x="1310" y="120" width="120" height="520" fill="#B29A7E"/><circle cx="1325" cy="390" r="6" fill="#2E2E2E"/>`}
+    <line x1="720" y1="0" x2="720" y2="120" stroke="#2E2E2E" stroke-width="3"/><path d="M670 120 L770 120 L748 150 L692 150 Z" fill="#111"/>
+    <rect x="0" y="640" width="1440" height="260" fill="#C9BFB2"/>`;
+    const front = `<path d="M160 610 L1280 610 L1380 900 L60 900 Z" fill="#F4F2EE"/><path d="M160 610 L1280 610 L1286 624 L154 624 Z" fill="#DAD5CD"/>
+    <rect x="860" y="560" width="40" height="52" rx="6" fill="#DDEFF7" stroke="#BDBDBD" stroke-width="3"/>
+    <g transform="rotate(-8 1060 790)"><rect x="940" y="720" width="250" height="170" rx="6" fill="#C8102E"/><rect x="956" y="730" width="226" height="150" rx="3" fill="#fff"/>
+    <line x1="972" y1="762" x2="1160" y2="762" stroke="#D7D7D7" stroke-width="3"/><line x1="972" y1="790" x2="1160" y2="790" stroke="#D7D7D7" stroke-width="3"/><line x1="972" y1="818" x2="1160" y2="818" stroke="#D7D7D7" stroke-width="3"/></g>
+    <rect x="1180" y="760" width="12" height="130" rx="6" fill="#111" transform="rotate(30 1186 825)"/>`;
+    return { back, front };
+  },
+  // office coffee bar (Priya)
+  coffee(){
+    const back = `<rect width="1440" height="900" fill="#EFE6DA"/>
+    <rect x="820" y="110" width="520" height="190" rx="6" fill="#222"/>
+    ${TXT(850,160,26,700,'#fff','HALVERN CAFÉ',3)}
+    <path d="M850 200 L1060 200" stroke="#BDBDBD" stroke-width="4" stroke-linecap="round"/><path d="M850 232 L1010 232" stroke="#BDBDBD" stroke-width="4" stroke-linecap="round"/><path d="M850 264 L1090 264" stroke="#BDBDBD" stroke-width="4" stroke-linecap="round"/>
+    <path d="M1150 200 L1300 200" stroke="#C8102E" stroke-width="4" stroke-linecap="round"/><path d="M1150 232 L1270 232" stroke="#BDBDBD" stroke-width="4" stroke-linecap="round"/>
+    <line x1="420" y1="0" x2="420" y2="90" stroke="#2E2E2E" stroke-width="3"/><circle cx="420" cy="106" r="22" fill="#C8102E"/>
+    <line x1="1020" y1="0" x2="1020" y2="60" stroke="#2E2E2E" stroke-width="3"/><circle cx="1020" cy="76" r="22" fill="#C8102E"/>
+    <rect x="0" y="330" width="1440" height="14" fill="#8B6B4E"/>
+    <rect x="40" y="290" width="40" height="40" rx="4" fill="#fff"/><rect x="92" y="290" width="40" height="40" rx="4" fill="#C8102E"/><rect x="144" y="290" width="40" height="40" rx="4" fill="#fff"/>
+    <rect x="0" y="470" width="1440" height="170" fill="#5A4636"/><rect x="0" y="460" width="1440" height="14" fill="#3E3026"/>
+    <rect x="980" y="370" width="170" height="100" rx="8" fill="#9CA3AA"/><rect x="996" y="386" width="138" height="36" rx="4" fill="#2E2E2E"/><rect x="1010" y="430" width="16" height="30" fill="#2E2E2E"/><rect x="1100" y="430" width="16" height="30" fill="#2E2E2E"/>
+    <rect x="1200" y="410" width="60" height="60" rx="6" fill="#fff"/><rect x="1270" y="420" width="60" height="50" rx="6" fill="#C8102E"/>
+    <rect x="0" y="640" width="1440" height="260" fill="#CDBFAE"/>`;
+    const front = `<rect x="712" y="620" width="16" height="280" fill="#2E2E2E"/><ellipse cx="720" cy="612" rx="320" ry="26" fill="#F4F2EE"/><ellipse cx="720" cy="618" rx="320" ry="22" fill="#DAD5CD"/><ellipse cx="720" cy="608" rx="318" ry="22" fill="#F7F5F1"/>
+    <rect x="852" y="560" width="40" height="46" rx="6" fill="#fff" stroke="#BDBDBD" stroke-width="3"/><path d="M892 572 C908 572 908 594 892 594" stroke="#BDBDBD" stroke-width="5" fill="none"/>
+    <rect x="560" y="566" width="36" height="40" rx="5" fill="#C8102E"/>`;
+    return { back, front };
+  },
+  // office lounge (Hiroshi)
+  lounge(o = {}){
+    const late = !!o.late;
+    const back = `<rect width="1440" height="900" fill="#EFE9E1"/>
+    <rect x="460" y="90" width="920" height="470" fill="${late ? '#F4D3AE' : '#CFE3F0'}"/>
+    ${late ? '<circle cx="1220" cy="240" r="56" fill="#F7B267"/>' : '<circle cx="1220" cy="200" r="40" fill="#FFF4C2"/>'}
+    <rect x="480" y="380" width="90" height="180" fill="${late ? '#B88A6B' : '#9AB2C6'}"/><rect x="580" y="320" width="70" height="240" fill="${late ? '#A47A5E' : '#8DA6BC'}"/>
+    <rect x="1040" y="350" width="80" height="210" fill="${late ? '#A47A5E' : '#8DA6BC'}"/><rect x="1130" y="420" width="120" height="140" fill="${late ? '#B88A6B' : '#9AB2C6'}"/><rect x="1260" y="370" width="100" height="190" fill="${late ? '#A47A5E' : '#7C97AE'}"/>
+    <rect x="460" y="90" width="920" height="470" fill="none" stroke="#2E2E2E" stroke-width="10"/>
+    <line x1="767" y1="90" x2="767" y2="560" stroke="#2E2E2E" stroke-width="6"/><line x1="1074" y1="90" x2="1074" y2="560" stroke="#2E2E2E" stroke-width="6"/>
+    <line x1="360" y1="0" x2="360" y2="140" stroke="#2E2E2E" stroke-width="3"/><circle cx="360" cy="156" r="22" fill="#C8102E"/>
+    <rect x="0" y="600" width="1440" height="300" fill="#B9AC9C"/><rect x="0" y="592" width="1440" height="10" fill="#A39684"/>
+    <rect x="40" y="430" width="120" height="170" rx="8" fill="#2E2E2E"/><ellipse cx="80" cy="400" rx="24" ry="58" fill="#3E7D4F" transform="rotate(-15 80 400)"/><ellipse cx="120" cy="392" rx="24" ry="64" fill="#4C9160" transform="rotate(14 120 392)"/>`;
+    const front = `<rect x="520" y="560" width="70" height="170" rx="28" fill="#4E5A4B"/><rect x="850" y="560" width="70" height="170" rx="28" fill="#4E5A4B"/>
+    <rect x="430" y="606" width="580" height="22" rx="6" fill="#7A5E45"/><rect x="460" y="628" width="18" height="140" fill="#5E4836"/><rect x="962" y="628" width="18" height="140" fill="#5E4836"/>
+    <rect x="640" y="570" width="34" height="36" rx="5" fill="#fff"/><rect x="780" y="572" width="34" height="34" rx="5" fill="#C8102E"/>`;
+    return { back: back + `<rect x="560" y="400" width="400" height="300" rx="40" fill="#5E6B5A"/>`, front };
+  },
+  // hallway outside a meeting room (Valeria, standing table)
+  hallway(){
+    const back = `<rect width="1440" height="900" fill="#E9E4DC"/>
+    <rect x="0" y="0" width="1440" height="70" fill="#D9D2C7"/><rect x="300" y="70" width="160" height="8" fill="#fff"/><rect x="980" y="70" width="160" height="8" fill="#fff"/>
+    <rect x="90" y="190" width="180" height="440" fill="#8B6B4E"/><rect x="100" y="200" width="160" height="420" fill="#9C7B5C"/><circle cx="242" cy="420" r="7" fill="#2E2E2E"/>
+    <rect x="110" y="232" width="140" height="28" rx="4" fill="#111"/>${TXT(124,252,14,700,'#fff','ATLAS ROOM',2)}
+    <rect x="0" y="330" width="1440" height="20" fill="#C8102E" opacity=".85"/>
+    <rect x="1000" y="170" width="150" height="110" fill="#fff" stroke="#2E2E2E" stroke-width="6"/><rect x="1014" y="184" width="122" height="82" fill="#BFD3E2"/>
+    <rect x="1190" y="170" width="150" height="110" fill="#fff" stroke="#2E2E2E" stroke-width="6"/><rect x="1204" y="184" width="122" height="82" fill="#F4D3AE"/>
+    <rect x="1040" y="390" width="260" height="240" fill="#8B6B4E"/><rect x="1050" y="400" width="240" height="230" fill="#9C7B5C"/>
+    <rect x="0" y="630" width="1440" height="270" fill="#7D7068"/><rect x="0" y="624" width="1440" height="10" fill="#5F544D"/>`;
+    const front = `<rect x="712" y="620" width="16" height="280" fill="#2E2E2E"/><ellipse cx="720" cy="612" rx="280" ry="24" fill="#2E2E2E"/><ellipse cx="720" cy="606" rx="278" ry="20" fill="#3C3C3C"/>
+    <rect x="840" y="560" width="200" height="40" rx="4" fill="#fff" transform="rotate(-4 940 580)"/><rect x="560" y="568" width="34" height="36" rx="5" fill="#C8102E"/>`;
+    return { back, front };
+  },
+  // private office (Valeria)
+  office(o = {}){
+    const late = !!o.late;
+    const back = `<rect width="1440" height="900" fill="#E8E1D6"/>
+    <rect x="60" y="110" width="340" height="420" fill="${late ? '#F4D3AE' : '#CFE3F0'}"/><rect x="60" y="110" width="340" height="420" fill="none" stroke="#2E2E2E" stroke-width="10"/><line x1="230" y1="110" x2="230" y2="530" stroke="#2E2E2E" stroke-width="6"/>
+    <rect x="1030" y="130" width="300" height="500" fill="#6E533B"/>
+    ${[170,290,410,530].map(y=>`<rect x="1040" y="${y+86}" width="280" height="10" fill="#5A4430"/>`).join('')}
+    ${[[1050,0,'#C8102E'],[1080,0,'#2F4858'],[1112,0,'#EBCB8B'],[1200,0,'#1F6F6B'],[1060,1,'#2F4858'],[1090,1,'#C8102E'],[1250,1,'#9C7B5C'],[1070,2,'#EBCB8B'],[1160,2,'#1F6F6B'],[1190,2,'#C8102E']].map(([x,r,c])=>`<rect x="${x}" y="${[256,376,496][r] - 66}" width="26" height="66" fill="${c}"/>`).join('')}
+    <rect x="520" y="140" width="190" height="130" fill="#fff" stroke="#8B6B4E" stroke-width="8"/>${TXT(548,190,14,700,'#C8102E','PROJECT OF THE',1)}${TXT(548,212,14,700,'#C8102E','YEAR 2025',1)}<rect x="548" y="230" width="120" height="6" fill="#BDBDBD"/>
+    <circle cx="880" cy="180" r="40" fill="#fff" stroke="#2E2E2E" stroke-width="6"/><line x1="880" y1="180" x2="880" y2="154" stroke="#2E2E2E" stroke-width="4"/><line x1="880" y1="180" x2="${late ? 902 : 898}" y2="${late ? 190 : 170}" stroke="#2E2E2E" stroke-width="4"/>
+    <rect x="0" y="640" width="1440" height="260" fill="#B3A493"/><rect x="0" y="632" width="1440" height="10" fill="#9C8D7C"/>`;
+    const front = `<rect x="400" y="606" width="680" height="26" rx="4" fill="#3E3026"/><rect x="420" y="632" width="640" height="150" fill="#2F241C"/>
+    <rect x="860" y="540" width="170" height="66" rx="4" fill="#9CA3AA"/><rect x="848" y="600" width="194" height="10" rx="3" fill="#7B8288"/>
+    <rect x="470" y="574" width="130" height="32" rx="3" fill="#C9A86A"/>${TXT(482,596,14,700,'#3E3026','V. GUTIÉRREZ',1)}`;
+    return { back, front };
+  }
+};
+function renderScene(){
+  const expr = expressionFor(Session.state);
+  const idx = Session.sceneIdx;
+  const scene = SC.scenes[idx];
+  const bgKey = scene.bg || (idx === 0 ? 'desk' : 'room');
+  const opts = scene.opts || (bgKey === 'room' && idx === 2 ? { commit:true } : {});
+  const { back, front } = BG[bgKey](opts);
+  $('sceneSvg').innerHTML = `<svg class="scene" viewBox="0 0 1440 900" width="1440" height="900" role="img" aria-label="${esc(SC.employee.name)}, looking ${expr}">${back}${personSVG(SC.employee.look, expr, bgKey === 'hallway' || bgKey === 'coffee' || bgKey === 'lounge')}${front}</svg>`;
+  $('capK').textContent = 'SCENE ' + (idx+1);
+  $('capT').textContent = scene.caption;
+  const tr = $('tracker'); tr.innerHTML = '';
+  SC.scenes.forEach((s,i)=>{
+    if (i){ const ln = document.createElement('span'); ln.className = 'ln' + (i <= idx ? ' done' : ''); tr.appendChild(ln); }
+    const el = document.createElement('span');
+    el.className = 'st' + (i < idx ? ' done' : i === idx ? ' cur' : '');
+    el.textContent = (i+1) + ' ' + s.label + (i < idx ? ' ✓' : '');
+    tr.appendChild(el);
+  });
+  const shown = Math.max(1, Math.min(Session.busy ? Session.turn : Session.turn + 1, 10));
+  $('turnLabel').textContent = 'Turn ' + shown + ' of 10';
+  const left = 10 - Session.turn;
+  $('turnsChip').textContent = left + (left === 1 ? ' turn left' : ' turns left');
+  $('turnsChip').classList.toggle('hidden', idx < 2 || left <= 0);
+}
+
+/* ---------- Bubble ---------- */
+let revealTimer = null;
+function bubbleThinking(){ clearInterval(revealTimer); $('bubbleText').innerHTML = '<span class="dots" aria-label="Thinking"><span></span><span></span><span></span></span>'; }
+function bubbleSay(text){
+  return new Promise(res=>{
+    clearInterval(revealTimer);
+    const words = text.split(' '); let i = 0;
+    $('bubbleText').textContent = '';
+    revealTimer = setInterval(()=>{
+      i++; $('bubbleText').textContent = words.slice(0,i).join(' ');
+      if (i >= words.length){ clearInterval(revealTimer); res(); }
+    }, 55);
+  });
+}
+function fadeTo(idx){
+  return new Promise(res=>{
+    $('fadeK').textContent = 'SCENE ' + (idx+1) + ' · ' + SC.scenes[idx].label.toUpperCase();
+    $('fadeT').textContent = SC.scenes[idx].caption;
+    $('fade').classList.add('show');
+    setTimeout(()=>{ Session.sceneIdx = idx; renderScene(); bubbleThinking(); setTimeout(()=>{ $('fade').classList.remove('show'); setTimeout(res, 450); }, 900); }, 500);
+  });
+}
+
+/* ---------- Conversation turn ---------- */
+function historyMessages(){
+  const msgs = [];
+  for (const l of Session.log){ msgs.push({ role:'user', content:l.text }); if (l.reply) msgs.push({ role:'assistant', content:l.reply }); }
+  const out = msgs.slice(-12);
+  while (out.length && out[0].role !== 'user') out.shift();
+  return out;
+}
+function setBusy(b){
+  Session.busy = b;
+  $('btnSend').disabled = b; $('reply').disabled = b;
+  $('btnMic').disabled = !Voice.rec || b;
+  $('btnEnd').disabled = b; $('btnWrap').disabled = b;
+}
+async function sendTurn(){
+  if (Session.busy || Session.ended) return;
+  const text = $('reply').value.trim();
+  if (!text) return;
+  Voice.stop();
+  const sid = Session.id;
+  const stale = ()=> sid !== Session.id || Session.ended;
+  setBusy(true);
+  $('reply').value = '';
+  Session.turn += 1;
+  const turn = Session.turn;
+  const prevState = { ...Session.state }, prevScene = Session.sceneIdx;
+  bubbleThinking();
+  try {
+    // 1. tag
+    const rTags = ruleTags(text, turn);
+    let lTags = [];
+    // The extra model tagging pass only runs with a cloud API. On the in-browser model it
+    // doubled the wait per turn and over-tagged, so local mode uses the rule tagger alone.
+    if (LLM.usesApi('tagger') || LLM.mock){
+      try { lTags = parseTagJSON(await LLM.chat(taggerPrompt(text), { temperature:0, max_tokens:60, purpose:'tagger' })); } catch(e){ console.warn('tagger failed', e); }
+      if (stale()) return;
+    }
+    const tags = mergeTags(rTags, lTags);
+    // 2. state
+    const before = Session.state.trust;
+    const { state, dT } = applyTags(Session.state, tags);
+    Session.state = state;
+    const prevEntry = Session.log[Session.log.length-1];
+    const entry = { turn, text, tags, rtags:rTags, dT, trustBefore:before, trustAfter:state.trust, scene:Session.sceneIdx,
+      fullBefore:prevState.full, prevReply: prevEntry ? prevEntry.reply : SC.opening, reply:'' };
+    Session.log.push(entry);
+    // 3. scene
+    const ni = nextSceneIndex(Session.sceneIdx, turn, tags);
+    if (ni !== Session.sceneIdx) await fadeTo(ni); else renderScene();
+    if (stale()) return;
+    // 4. reply
+    const sys = employeePrompt(SC, Session.variant, Session.state, Session.sceneIdx);
+    const msgs = [{ role:'system', content:sys }, ...historyMessages()];
+    if (LLM.warm) await LLM.warm;
+    if (LLM.canStream('employee')){
+      // show the expression first, then stream the words into the bubble
+      renderScene();
+      let started = false;
+      const raw = await LLM.stream(msgs, { temperature:0.7, max_tokens:140 }, (partial)=>{
+        if (stale()) return;
+        const p = streamPreview(partial, SC.employee.first);
+        if (p){ started = true; clearInterval(revealTimer); $('bubbleText').textContent = p; }
+      });
+      if (stale()) return;
+      const reply = cleanReply(raw, SC.employee.first);
+      entry.reply = reply;
+      $('bubbleText').textContent = reply;
+    } else {
+      const raw = await LLM.chat(msgs, { temperature:0.7, max_tokens:140, purpose:'employee' });
+      if (stale()) return;
+      const reply = cleanReply(raw, SC.employee.first);
+      entry.reply = reply;
+      // show expression after reacting
+      renderScene();
+      await bubbleSay(reply);
+    }
+    if (stale()) return;
+    Session.state.lastNegative = false;
+  } catch(err){
+    console.error(err);
+    if (stale()) return;
+    Session.turn -= 1;
+    Session.state = prevState;
+    Session.sceneIdx = prevScene;
+    if (Session.log.length && Session.log[Session.log.length-1].turn === turn && !Session.log[Session.log.length-1].reply) Session.log.pop();
+    $('bubbleText').textContent = '(Something went wrong generating a reply: ' + (err.message||err) + '. Try sending again.)';
+    $('reply').value = text;
+  }
+  setBusy(false);
+  renderScene();
+  const ns = Session.log.some(l=>l.tags.includes('next_step'));
+  $('btnWrap').classList.toggle('hidden', !(Session.sceneIdx === 2 && ns) || Session.turn >= 10);
+  if (Session.turn >= 10){ Session.ended = true; $('reply').disabled = true; $('btnSend').disabled = true; openEnd(true); }
+  else $('reply').focus();
+}
+
+/* ---------- Voice ---------- */
+const Voice = {
+  rec:null, on:false, base:'',
+  init(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR){ $('btnMic').disabled = true; $('btnMic').title = 'Voice input needs Chrome or Edge'; return; }
+    this.rec = new SR(); this.rec.lang = 'en-US'; this.rec.continuous = true; this.rec.interimResults = true;
+    this.rec.onresult = (ev)=>{
+      if (!this.on) return;
+      let fin = '', inter = '';
+      for (let i = 0; i < ev.results.length; i++){ const r = ev.results[i]; if (r.isFinal) fin += r[0].transcript; else inter += r[0].transcript; }
+      $('reply').value = (this.base + ' ' + fin + ' ' + inter).replace(/\s+/g,' ').trim();
+    };
+    this.rec.onend = ()=>{ this.setOn(false); };
+    this.rec.onerror = (e)=>{ console.warn('speech error', e.error); this.setOn(false); };
+  },
+  setOn(v){
+    this.on = v; $('btnMic').classList.toggle('on', v);
+    $('replyLabel').textContent = v ? 'LISTENING · EDIT BEFORE SENDING' : 'YOUR REPLY · TAP THE MIC OR TYPE';
+    $('replyLabel').classList.toggle('live', v);
+  },
+  toggle(){
+    if (!this.rec || Session.busy) return;
+    if (this.on){ this.stop(); return; }
+    this.base = $('reply').value.trim();
+    try { this.rec.start(); this.setOn(true); } catch(e){ console.warn(e); }
+  },
+  stop(){ const was = this.on; this.setOn(false); this.base = ''; if (this.rec && was){ try { this.rec.abort(); } catch(e){} } }
+};
+
+/* ---------- Start / end ---------- */
+function startSession(){
+  $('hudSub').textContent = 'Scenario ' + SC.num + ' · ' + SC.title;
+  $('bubbleName').textContent = SC.employee.name.toUpperCase();
+  $('reply').placeholder = 'Say something to ' + SC.employee.first + '...';
+  Session.variant = pickVariant();
+  const st = SC.start[Session.difficulty];
+  Session.state = { trust:st.trust, openness:st.openness, peakTrust:st.trust, hint:false, full:false, lastNegative:false };
+  Session.id = (Session.id || 0) + 1; Session.finishing = false;
+  Session.sceneIdx = 0; Session.turn = 0; Session.log = []; Session.ended = false;
+  setBusy(false);
+  $('reply').value = ''; $('btnWrap').classList.add('hidden'); $('endModal').classList.add('hidden');
+  show('screen-scene');
+  renderScene();
+  bubbleSay(SC.opening);
+  setTimeout(()=>$('reply').focus(), 200);
+}
+function openEnd(auto){
+  $('endTitle').textContent = auto ? 'That was your last turn' : 'End the conversation?';
+  $('endText').textContent = auto ? 'You used all 10 turns. Let\'s see how it went.' : 'You\'ll get your feedback report based on what you\'ve said so far.';
+  $('btnEndCancel').classList.toggle('hidden', !!auto);
+  $('endModal').classList.remove('hidden');
+}
+async function finish(){
+  if (Session.finishing) return;
+  Session.finishing = true;
+  $('endModal').classList.add('hidden');
+  Session.ended = true; Voice.stop();
+  Session.log = Session.log.filter(l=>l.reply);
+  show('screen-loading');
+  const report = await buildReport();
+  renderReport(report);
+  show('screen-report');
+}
+async function buildReport(){
+  const log = Session.log, state = Session.state;
+  const sc = scoreSession(log, state);
+  const rewrites = [];
+  const picks = pickRewriteTurns(log);
+  for (const p of picks){
+    $('loadingNote').textContent = 'Writing a stronger version of turn ' + p.turn + '...';
+    let better = null;
+    try { better = auditRewrite(await LLM.chat(rewritePrompt(p, Session.variant), { temperature:0.4, max_tokens:90, purpose:'report' }), p.text); } catch(e){ console.warn('rewrite failed', e); }
+    const fallback = (p.issue === 'advice' && p.fullBefore) ? SC.exemplars.advicePlan
+      : (p.issue === 'closed_question' && p.scene === 2 && SC.exemplars.closedPlan) ? SC.exemplars.closedPlan
+      : (SC.exemplars[p.issue] || SC.exemplars.none);
+    rewrites.push({ turn:p.turn, said:clipWords(p.text, 60), why:whyMissed(p), better: better || fallback });
+  }
+  return {
+    ...sc, rewrites,
+    strengths: buildStrengths(log, state), improvements: buildImprovements(log, state), tips: buildTips(sc.scores),
+    variant: Session.variant, state, turns: log.length,
+    transcript: log.map(l=>({ turn:l.turn, text:l.text, reply:l.reply, tags:l.tags.filter(t=>t !== 'private_move'), dT:l.dT })),
+    date: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+  };
+}
+const TAG_LABEL = { goal:'set purpose', open_question:'open question', closed_question:'closed question', empathy:'empathy', reflection:'reflection', options:'asked for ideas', advice:'advice', next_step:'next step', blame:'blame', threat:'threat' };
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c])); }
+function renderReport(r){
+  const bars = AREAS.map(a=>{
+    const v = r.scores[a.key];
+    return `<div class="scorerow"><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:600">${a.name}</span><span class="small muted">${a.kind}</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><div class="bar"><div style="width:${v*20}%;background:${v<=2?'#C8102E':'#111'}"></div></div><span class="small muted">${esc(r.why[a.key])}</span></div>
+      <span style="font-size:16px;font-weight:700;text-align:right">${v}</span></div>`;
+  }).join('');
+  const items = (arr, color) => arr.length ? arr.map(t=>`<div class="item"><span class="mk" style="background:${color}"></span><p>${esc(t)}</p></div>`).join('') : '<p class="muted" style="margin:0">Nothing major to flag here.</p>';
+  const rws = r.rewrites.length ? r.rewrites.map(w=>`<h2 style="font-size:16px;margin-top:4px">Turn ${w.turn}</h2>
+    <div class="rw"><div><span class="h">YOU SAID</span><p>"${esc(w.said)}"</p></div><div><span class="h">WHY IT MISSED</span><p>${esc(w.why)}</p></div><div class="good"><span class="h">STRONGER VERSION</span><p>"${esc(w.better)}"</p></div></div>`).join('')
+    : '<p class="muted" style="margin:0">None of your turns needed a rewrite. Nice work.</p>';
+  const learned = r.state.full
+    ? `<p style="margin:0;color:#E8E8E8">You uncovered the real cause: ${esc(r.variant.unrevealed)}</p>`
+    : `<p style="margin:0;color:#E8E8E8">${esc(r.variant.unrevealed)} ${esc(P('{He} would have shared this at trust 70'))}; you reached a peak of ${r.state.peakTrust}.</p>`;
+  $('screen-report').innerHTML = `
+    <div class="rep-head"><div class="strip"></div><div class="in">
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:280px"><span class="kicker">COACHING REPORT · SCENARIO ${SC.num}</span><h1>${esc(SC.title)} with ${esc(SC.employee.name)}</h1>
+      <span class="muted" style="font-size:14px">${esc(SC.employee.role)} · ${esc(r.date)} · ${r.turns} of 10 turns used · ${Session.difficulty === 'challenging' ? 'Challenging' : 'Standard'}</span></div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div class="stat" style="background:#111;color:#fff"><span class="l" style="color:#D6D6D6">OVERALL</span><span class="v">${r.overall}<span style="font-size:18px;color:#D6D6D6"> / 5</span></span></div>
+        <div class="stat" style="background:var(--gray)"><span class="l muted">FINAL TRUST</span><span class="v">${r.state.trust}<span style="font-size:18px;color:#4A4A4A"> / 100</span></span></div>
+      </div></div>
+      <div class="variantline">Hidden cause this session (variant ${r.variant.id}): ${esc(r.variant.label)}.</div></div>
+    <div class="row2">
+      <div class="card" style="display:flex;flex-direction:column;gap:16px"><h2>Scorecard</h2>${bars}</div>
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <div class="card" style="display:flex;flex-direction:column;gap:14px"><h2>What you did well</h2>${items(r.strengths,'#111')}</div>
+        <div class="card" style="display:flex;flex-direction:column;gap:14px"><h2>What to improve</h2>${items(r.improvements,'#C8102E')}</div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:14px"><h2>Rewritten answers</h2>${rws}</div>
+    <div class="row2">
+      <div class="card" style="background:#111;color:#fff;display:flex;flex-direction:column;gap:12px"><h2>${r.state.full ? 'What you learned' : 'What you didn\'t learn'}</h2>${learned}</div>
+      <div class="card" style="display:flex;flex-direction:column;gap:12px"><h2>Try next time</h2><ol style="margin:0;padding-left:20px;line-height:1.6">${r.tips.map(t=>`<li>${esc(t)}</li>`).join('')}</ol></div>
+    </div>
+    <details class="card" open style="display:flex;flex-direction:column;gap:14px"><summary style="font-size:20px;font-weight:700">Conversation transcript</summary>
+      <p class="small muted" style="margin:12px 0 4px">What each of your turns was counted as, and how it moved ${esc(SC.employee.first)}'s trust.</p>
+      ${r.transcript.map(l=>`<div style="border-top:1px solid var(--line);padding:12px 0;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="kicker" style="color:#111">TURN ${l.turn} · YOU</span>${l.tags.map(t=>`<span class="pill">${esc(TAG_LABEL[t]||t)}</span>`).join('')}<span class="small" style="font-weight:600;color:${l.dT<0?'#A30D25':'#2F6A40'}">${l.dT>0?'+':''}${l.dT} trust</span></div>
+        <p style="margin:0;font-size:15px">${esc(stripFillers(l.text))}</p>
+        <p style="margin:0;font-size:15px;color:#4A4A4A"><b style="color:var(--red)">${esc(SC.employee.first)}:</b> ${esc(l.reply)}</p></div>`).join('')}
+    </details>
+    <div class="card" style="display:flex;gap:16px;align-items:flex-start;padding:20px 28px"><span class="kicker" style="flex:none;padding-top:3px">WHY THIS MATTERS</span>
+      <p class="small" style="margin:0;color:#333">This report scores you against the GROW model (Goal, Reality, Options, Way forward) from John Whitmore's <em>Coaching for Performance</em>, plus core coaching behaviors. People commit more to plans they help shape, so asking before telling usually leads to better follow-through than handing over the answer.</p></div>
+    <div class="noprint" style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-red" id="btnPdf">Download PDF</button>
+      <button class="btn btn-outline" id="btnRetry">Retry with a new hidden cause</button>
+      <button class="btn btn-outline" id="btnOther">Choose another scenario</button>
+    </div>
+    <p class="small muted" style="margin:0">${LLM.mode === 'local' && /Llama/.test(LLM.modelId||'') ? 'Built with Llama. ' : ''}Halvern Coaching Practice Lab · practice simulation with a fictional company and employees.</p>`;
+  $('btnPdf').onclick = ()=>window.print();
+  $('btnRetry').onclick = ()=>startSession();
+  $('btnOther').onclick = ()=>show('screen-select');
+}
+
+/* ---------- Setup / select / settings ---------- */
+function renderSelect(){
+  $('scenarioGrid').innerHTML = SCENARIOS.map(s=>`<div class="scen active">
+    <span class="kicker">SCENARIO ${s.num}</span><h2>${esc(s.title)}</h2><span class="small muted">${esc(s.who)}</span><p style="margin:0">${esc(s.blurb)}</p>
+    <button class="btn btn-red" data-s="${s.id}" style="align-self:flex-start">Open briefing</button></div>`).join('');
+  $('scenarioGrid').querySelectorAll('button[data-s]').forEach(b=>b.onclick = ()=>openBrief(b.dataset.s));
+}
+function setScenario(id){
+  const next = SCENARIOS.find(s=>s.id === id) || S1;
+  SC = next;
+}
+function openBrief(id){
+  setScenario(id);
+  $('briefKicker').textContent = 'SCENARIO ' + SC.num + ' · BRIEFING';
+  $('briefTitle').textContent = SC.title + ' with ' + SC.employee.name;
+  $('briefIntro').textContent = SC.intro;
+  $('briefFacts').innerHTML = SC.facts.map(f=>`<li>${esc(f)}</li>`).join('');
+  $('briefGoal').textContent = SC.goal;
+  $('briefReacts').textContent = SC.employee.first + ' reacts to how you coach. There is no script to follow.';
+  $('briefPlay').textContent = SC.playNote;
+  show('screen-brief');
+}
+function setDifficulty(d){
+  Session.difficulty = d; $('dStd').classList.toggle('on', d==='standard'); $('dHard').classList.toggle('on', d==='challenging');
+  $('diffNote').textContent = d === 'standard'
+    ? 'Standard: the employee starts cautious but willing to talk, and opens up as you build trust.'
+    : 'Challenging: the employee starts guarded and defensive, so it takes more trust before they share the real issue.';
+}
+const MODEL_HELP = {
+  'Llama-3.2-3B-Instruct-q4f16_1-MLC':'<b>Best for most people.</b> The most natural conversation and the most reliable at staying in character. Needs a laptop from the last few years with at least 8 GB of memory.',
+  'Qwen2.5-1.5B-Instruct-q4f16_1-MLC':'<b>For older or lower-memory laptops.</b> Half the download and faster replies. The employee may sometimes drift out of character or give shorter, flatter answers.',
+  'Llama-3.2-1B-Instruct-q4f16_1-MLC':'<b>Quick demos only.</b> The fastest and smallest. Replies are noticeably weaker, so use it only to try the flow when other models are too slow.'
+};
+function refreshModelHelp(){ $('modelHelp').innerHTML = MODEL_HELP[$('modelSelect').value] || ''; }
+function refreshApiButton(){ $('btnUseApi').classList.toggle('hidden', !LLM.api.key); }
+async function doLoad(){
+  $('loadErr').classList.add('hidden');
+  if (LLM.mock){ LLM.mode = 'mock'; renderSelect(); show('screen-select'); return; }
+  if (!navigator.gpu){ $('loadErr').textContent = 'This browser does not support WebGPU. Use a recent Chrome or Edge on a laptop or desktop.'; $('loadErr').classList.remove('hidden'); return; }
+  $('btnLoad').disabled = true; $('modelSelect').disabled = true; $('loadBox').classList.remove('hidden');
+  try {
+    LLM.modelId = $('modelSelect').value;
+    LLM.engine = await loadWebLLM($('modelSelect').value, (p)=>{
+      $('loadBar').style.width = Math.round((p.progress||0)*100) + '%';
+      $('loadText').textContent = p.text || 'Loading...';
+    });
+    LLM.mode = 'local';
+    // Warm up the GPU while the user reads the scenario screens, so the first reply is not slow
+    LLM.warm = LLM.engine.chat.completions.create({ messages:[{ role:'system', content:employeePrompt(S1, S1.variants[0], { trust:45, openness:40, hint:false, full:false, lastNegative:false }, 0) }, { role:'user', content:'Hi Kwame.' }], max_tokens:8 })
+      .catch(e=>console.warn('warm-up failed', e)).then(()=>{ LLM.warm = null; });
+    renderSelect(); show('screen-select');
+  } catch(err){
+    console.error(err);
+    let msg = 'The model could not load: ' + (err.message||err);
+    if (location.protocol === 'file:') msg += ' If you opened this file directly from your computer, try serving it from a local web server instead (see the instructions that came with it).';
+    $('loadErr').textContent = msg; $('loadErr').classList.remove('hidden');
+    $('btnLoad').disabled = false; $('modelSelect').disabled = false;
+  }
+}
+function init(){
+  $('gpuStatus').textContent = LLM.mock ? 'Preview mode: scripted replies, no model needed.'
+    : navigator.gpu ? 'WebGPU is available. You are ready to load the model.'
+    : 'WebGPU is not available in this browser. Use a recent Chrome or Edge on a laptop or desktop.';
+  if (LLM.mock){ $('btnLoad').textContent = 'Continue in preview mode'; $('modelField').classList.add('hidden'); }
+  $('btnLoad').onclick = doLoad;
+  $('modelSelect').onchange = refreshModelHelp; refreshModelHelp();
+  $('btnUseApi').onclick = ()=>{ LLM.mode = 'api'; renderSelect(); show('screen-select'); };
+  $('dStd').onclick = ()=>setDifficulty('standard'); $('dHard').onclick = ()=>setDifficulty('challenging');
+  $('btnStart').onclick = startSession; $('btnBackSelect').onclick = ()=>show('screen-select');
+  $('btnSend').onclick = sendTurn;
+  $('reply').addEventListener('keydown', e=>{ if (e.key === 'Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); sendTurn(); } });
+  $('btnMic').onclick = ()=>Voice.toggle();
+  $('btnEnd').onclick = ()=>openEnd(false);
+  $('btnWrap').onclick = ()=>openEnd(false);
+  $('btnEndCancel').onclick = ()=>$('endModal').classList.add('hidden');
+  $('btnEndConfirm').onclick = finish;
+  $('btnSettings').onclick = ()=>$('settingsModal').classList.remove('hidden');
+  $('btnSettingsSave').onclick = ()=>{
+    LLM.api.provider = $('apiProvider').value; LLM.api.key = $('apiKey').value.trim();
+    LLM.api.model = $('apiModel').value.trim(); LLM.api.route = $('apiRoute').value;
+    $('settingsModal').classList.add('hidden'); refreshApiButton();
+  };
+  $('apiProvider').onchange = ()=>{ $('apiModel').placeholder = $('apiProvider').value === 'anthropic' ? 'claude-sonnet-5-5' : 'gpt-4o-mini'; };
+  document.addEventListener('keydown', e=>{ if (e.key === 'Escape'){ $('settingsModal').classList.add('hidden'); if (!$('btnEndCancel').classList.contains('hidden')) $('endModal').classList.add('hidden'); } });
+  Voice.init();
+}
+init();
+
+// exposed for automated tests
+window.SIM = { S1, S2, S3, S4, SCENARIOS, setScenario, openBrief, BG, personSVG, P, get SC(){ return SC; }, TAGS, DELTAS, ruleTags, mergeTags, parseTagJSON, applyTags, band, expressionFor, nextSceneIndex, employeePrompt, cleanReply, scoreSession, buildStrengths, buildImprovements, pickRewriteTurns, auditRewrite, buildTips, Session, LLM, rewritePrompt, whyMissed, stripFillers, clipWords, streamPreview };
+</script>
+</body>
+</html>

@@ -22,6 +22,12 @@
   url: /records-vault
   featured: true
 
+- title: Coaching Practice Lab (Manager Simulator)
+  tags: WebLLM · Llama 3.2 · JavaScript
+  summary: Managers coach an AI employee by voice or text across 4 scenarios, then get a scored GROW feedback report.
+  url: /coaching-simulator
+  featured: true
+
 - title: Automated Leadership Reporting Pipeline
   tags: Visier · Power Query · Copilot
   summary: Refreshes senior leadership slides automatically, with a Copilot agent to explore the numbers.

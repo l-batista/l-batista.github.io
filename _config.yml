@@ -18,7 +18,7 @@ navbar-links:
     - FDA Compliance Pipeline: "fda-compliance-pipeline"
     - The Records Vault (SQL Dungeon Game): "records-vault"
     - Coaching Practice Lab (Manager Simulator): "coaching-simulator"
-    - Scaled Slide Automation: "/scaled-slide-automation"
+    - Scaled Rep Slide Automation: "/scaled-slide-automation"
   Tools:
     - Calibration Board: "calibration-board"
     - BOM Gap Analyzer: "bom-gap-analyzer"

@@ -20,6 +20,7 @@ navbar-links:
     - Coaching Practice Lab (Manager Simulator): "coaching-simulator"
     - Scaled Rep Slide Automation: "/scaled-slide-automation"
   Tools:
+    - All Tools: "/tools"
     - Calibration Board: "calibration-board"
     - BOM Gap Analyzer: "bom-gap-analyzer"
     - Contingent Workforce Supplier Review: "contingent-workforce-supplier-review"

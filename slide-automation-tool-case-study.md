@@ -8,6 +8,8 @@ subtitle: A PowerPoint reporting tool built with AI
 
 [← Back to portfolio home](/)
 
+*See this tool used at scale: [Scaled Slide Automation for Sales Rep Reviews](/scaled-slide-automation).*
+
 **[JavaScript · JSZip · SheetJS · Claude]**
 
 [Open the tool](/assets/css/slide-automation-tool.html) · <a href="/assets/css/slide-automation-tool.html" download>Download it</a> (single HTML file, opens in Chrome or Edge, works offline, no install)

@@ -39,7 +39,7 @@ The team now sets up their slide templates once. Each cycle, they update the Exc
 - **About 45 hours saved per run:** work that took most of a week by hand now takes minutes.
 - **Over 1,000 hours saved per year:** across a biweekly cadence, that is roughly half of one full-time employee's capacity.
 - **Fewer manual errors:** numbers flow straight from the source file instead of being copied by hand 200 times.
-- **Fast adoption:** once I shared the tool, the team generated their full set of slides right away.
+- **Strong feedback from both sides:** the analysts who used to build the slides were very positive about the time they got back. Sales leaders were equally positive, since they now received a consistent product on a faster timeline.
 
 ## What I Learned
 
